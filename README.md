@@ -1,13 +1,3 @@
 # android
 
-```
- _________________________________________
-/ Postmen never die, they just lose their \
-\ zip.                                    /
- -----------------------------------------
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||
-```
+Código fuente de la aplicación BusGasteiz para Android.
