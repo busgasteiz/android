@@ -9,6 +9,7 @@ Aplicación para Android que visualiza la información en tiempo real de los aut
 ```
 android/BusGasteiz/
 ├── build.gradle.kts                        # Configuración de proyecto (raíz)
+├── google-services.json                    # Configuración de Firebase (mover a app/ antes de compilar)
 ├── app/
 │   ├── build.gradle.kts                    # Dependencias y configuración del módulo app
 │   └── src/main/
@@ -25,7 +26,7 @@ android/BusGasteiz/
 │           │   ├── ProtoReader.kt          # Decodificador protobuf de bajo nivel (sin dependencias)
 │           │   ├── ZipExtractor.kt         # Descompresión de ZIPs (ZipInputStream)
 │           │   ├── LocationRepository.kt   # Wrapper de FusedLocationProviderClient
-│           │   └── FavoritesRepository.kt  # Favoritos persistidos con DataStore<Preferences>
+│           │   └── FavoritesRepository.kt  # Favoritos sincronizados con Firestore (auth anónima)
 │           ├── settings/
 │           │   └── AppSettings.kt          # DataStore<Preferences>; radio de búsqueda y otros ajustes
 │           └── ui/
@@ -58,7 +59,9 @@ android/BusGasteiz/
 | Mapas                   | Google Maps SDK + Maps Compose (`com.google.maps.android:maps-compose`) |
 | Localización GPS        | `FusedLocationProviderClient` (Google Play Services)      |
 | Localización de strings | `strings.xml` + carpetas `values-es/`, `values-eu/`       |
-| Persistencia            | `DataStore<Preferences>` (Jetpack DataStore)              |
+| Persistencia local      | `DataStore<Preferences>` (Jetpack DataStore)              |
+| Favoritos               | Firebase Firestore (`firebase-firestore-ktx`)             |
+| Autenticación           | Firebase Auth anónima (`firebase-auth-ktx`)               |
 | Red                     | `OkHttp` o `HttpURLConnection` (stdlib)                   |
 | Navegación              | Compose Navigation (`NavHost`)                            |
 | Barra de pestañas       | `NavigationSuiteScaffold` (adapta a bottom bar / rail / drawer) |
@@ -83,8 +86,8 @@ android/BusGasteiz/
 | Barra de pestañas                | `TabView`                                | `NavigationSuiteScaffold` / `NavigationBar`                   |
 | Navegación push                  | `NavigationStack` + `NavigationPath`     | `NavHost` + `NavController` (Compose Navigation)             |
 | Ajustes persistidos              | `UserDefaults`                           | `DataStore<Preferences>`                                      |
-| Favoritos                        | `UserDefaults` (local)                   | `DataStore<Preferences>` (local)                              |
-| Sincronización en la nube        | —  (solo local en este proyecto)         | — (solo local; ver nota abajo)                                |
+| Favoritos                        | `UserDefaults` (local)                   | Firebase Firestore (sincronizado entre dispositivos)          |
+| Sincronización en la nube        | — (solo local en este proyecto)          | Firebase Firestore con autenticación anónima                  |
 | Cadenas localizadas              | `Localizable.xcstrings`                  | `strings.xml` + `values-es/`, `values-eu/`                   |
 | Vista "sin contenido"            | `ContentUnavailableView`                 | Componente Compose personalizado                              |
 | Botón de cierre de sheet         | `SheetCloseButton` (adaptativo iOS 26+)  | `IconButton { Icon(Icons.Default.Close) }` (uniforme)         |
@@ -93,17 +96,26 @@ android/BusGasteiz/
 | Convenciones de diseño           | Human Interface Guidelines (Apple)       | Material Design 3 (Google)                                    |
 | Color dinámico del tema          | Acento del sistema (`Color.accentColor`) | Dynamic Color de Material You (`dynamicLightColorScheme`)     |
 
-### Nota sobre sincronización de favoritos
+### Sincronización de favoritos con Firestore
 
-En iOS los favoritos se guardan en `UserDefaults` sin sincronización iCloud activa. En Android se
-usa igualmente almacenamiento **solo local** con `DataStore<Preferences>`. Si en el futuro se
-quisiera sincronización entre dispositivos, las opciones recomendadas son:
+Los favoritos se sincronizan en Firestore mediante **autenticación anónima**. Al arrancar la app,
+`FavoritesRepository` inicia sesión anónima con Firebase Auth si no existe ya una sesión. Esto
+proporciona un `uid` estable por dispositivo sin requerir que el usuario cree una cuenta.
 
-1. **Google Drive Backup** — copia de seguridad automática de `DataStore` (configurada en
-   `backup_rules.xml`; ya habilitado en el `AndroidManifest.xml` de la plantilla).
-2. **Firebase Firestore** — sincronización en tiempo real, requiere cuenta Google y dependencias
-   adicionales (`com.google.firebase:firebase-firestore-ktx`).
-3. Mantener solo local (paridad con iOS actual).
+Estructura de datos en Firestore:
+
+```
+users/{uid}/
+    favorites/
+        stops     → array de stop_id strings
+        routes    → array de strings "stopId::routeShortName"
+```
+
+La sesión anónima persiste entre reinicios de la app. Si el usuario desinstala y reinstala,
+se genera un nuevo `uid` y los favoritos previos se pierden (comportamiento equivalente al de iOS).
+
+> **Nota de privacidad**: la autenticación anónima no recopila datos personales del usuario;
+> el `uid` es un identificador opaco generado por Firebase en el dispositivo.
 
 ---
 
@@ -282,7 +294,11 @@ Equivalente de `RouteBadgeView` de iOS:
 
 - `favoriteStopIds: Flow<Set<String>>` — paradas completas guardadas.
 - `favoriteRouteKeys: Flow<Set<String>>` — claves `"stopId::routeShortName"` para líneas concretas.
-- Persistencia con `DataStore<Preferences>` (equivalente Android de `UserDefaults`).
+- Persistencia y sincronización con **Firebase Firestore** bajo `users/{uid}/favorites`.
+- Al inicializar, llama a `Firebase.auth.currentUser ?: Firebase.auth.signInAnonymously()` para
+  obtener un `uid` estable sin intervención del usuario.
+- Los cambios locales se escriben en Firestore con `set(..., SetOptions.merge())` y se escuchan
+  en tiempo real con `addSnapshotListener` para reflejar cambios desde otros dispositivos.
 - Expuesto como `StateFlow` al `ViewModel` para observación en Compose.
 
 ---
@@ -342,7 +358,67 @@ Acceder desde Compose a través de `AppSettings.searchRadiusFlow.collectAsState(
 
 ---
 
-## Configuración de Google Maps
+## Configuración de Firebase
+
+El fichero `google-services.json` está en la raíz del proyecto (`BusGasteiz/`). El plugin de
+Gradle de Google Services lo espera en el directorio del módulo (`app/`); **moverlo a `app/`
+antes de compilar**:
+
+```
+android/BusGasteiz/
+└── app/
+    └── google-services.json   ← ubicación correcta para el plugin
+```
+
+El plugin y las dependencias de Firebase deben añadirse a los ficheros de build:
+
+**`BusGasteiz/build.gradle.kts`** (raíz):
+```kotlin
+plugins {
+    id("com.google.gms.google-services") version "4.4.2" apply false
+}
+```
+
+**`app/build.gradle.kts`**:
+```kotlin
+plugins {
+    id("com.google.gms.google-services")
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.x.x"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+}
+```
+
+Usar la versión más reciente del BOM de Firebase disponible en el momento de implementar.
+
+### Servicios habilitados en la consola de Firebase
+
+| Servicio                  | Estado    | Uso                                              |
+|---------------------------|-----------|--------------------------------------------------|
+| Authentication — Anónima  | Habilitada| Sesión de usuario sin registro; genera `uid`     |
+| Firestore Database        | Habilitada| Almacenamiento y sincronización de favoritos     |
+
+### Reglas de seguridad de Firestore recomendadas
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+Cada usuario anónimo solo puede leer y escribir su propio subárbol `users/{uid}/`.
+
+---
+
+
 
 La clave de API de Google Maps se configura en `local.properties` (no versionar):
 
