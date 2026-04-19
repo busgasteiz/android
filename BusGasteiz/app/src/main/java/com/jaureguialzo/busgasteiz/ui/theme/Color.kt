@@ -2,10 +2,11 @@ package com.jaureguialzo.busgasteiz.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Colores de BusGasteiz — inspirados en los azules de la app iOS
+val Blue80 = Color(0xFF82B4FF)
+val BlueGrey80 = Color(0xFFB8C8E8)
+val Teal80 = Color(0xFF80DEEA)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Blue40 = Color(0xFF1565C0)
+val BlueGrey40 = Color(0xFF37474F)
+val Teal40 = Color(0xFF00838F)

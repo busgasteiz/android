@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">BusGasteiz</string>
+
+    <!-- Pestañas -->
+    <string name="tab_stops">Paradas</string>
+    <string name="tab_map">Mapa</string>
+    <string name="tab_favorites">Favoritos</string>
+
+    <!-- Nearby Stops -->
+    <string name="nearby_stops">Paradas cercanas</string>
+    <string name="no_nearby_stops">No hay paradas en %d m.\nAumenta el radio de búsqueda.</string>
+    <string name="updated_at">Actualizado: %s</string>
+    <string name="error_loading">Error al cargar los datos</string>
+    <string name="retry">Reintentar</string>
+    <string name="refresh">Actualizar</string>
+    <string name="about">Acerca de</string>
+    <string name="my_location">Mi ubicación</string>
+
+    <!-- Stop Detail -->
+    <string name="no_arrivals">No hay llegadas programadas en los próximos 60 minutos.</string>
+    <string name="next_scheduled">Próximos servicios programados</string>
+    <string name="scheduled">Programado</string>
+    <string name="close">Cerrar</string>
+
+    <!-- Favorites -->
+    <string name="no_favorites">Sin favoritos</string>
+    <string name="no_favorites_hint">Pulsa la estrella en una parada o línea para guardarla aquí.</string>
+    <string name="loading_data">Cargando datos…</string>
+    <string name="stops">Paradas</string>
+    <string name="lines">Líneas</string>
+    <string name="tram">Tranvía</string>
+    <string name="bus">Autobús</string>
+    <string name="favorite_stop">Parada favorita</string>
+
+    <!-- About -->
+    <string name="terms_of_service">Términos de servicio</string>
+    <string name="privacy_policy">Política de privacidad</string>
+    <string name="app_license">Licencia de la app</string>
+    <string name="data_sources">Fuentes de datos</string>
+    <string name="support_source">Soporte y código fuente</string>
+    <string name="github_repo">Repositorio en GitHub</string>
+    <string name="color_palettes">Paletas de colores</string>
+</resources>

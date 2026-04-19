@@ -1,3 +1,43 @@
 <resources>
     <string name="app_name">BusGasteiz</string>
+
+    <!-- Pestañas -->
+    <string name="tab_stops">Stops</string>
+    <string name="tab_map">Map</string>
+    <string name="tab_favorites">Favorites</string>
+
+    <!-- Nearby Stops -->
+    <string name="nearby_stops">Nearby Stops</string>
+    <string name="no_nearby_stops">No stops within %d m.\nIncrease the search radius.</string>
+    <string name="updated_at">Updated: %s</string>
+    <string name="error_loading">Error Loading Data</string>
+    <string name="retry">Retry</string>
+    <string name="refresh">Refresh</string>
+    <string name="about">About</string>
+    <string name="my_location">My location</string>
+
+    <!-- Stop Detail -->
+    <string name="no_arrivals">No scheduled arrivals in the next 60 minutes.</string>
+    <string name="next_scheduled">Next scheduled services</string>
+    <string name="scheduled">Scheduled</string>
+    <string name="close">Close</string>
+
+    <!-- Favorites -->
+    <string name="no_favorites">No Favorites</string>
+    <string name="no_favorites_hint">Tap the star on a stop or line to save it here.</string>
+    <string name="loading_data">Loading data…</string>
+    <string name="stops">Stops</string>
+    <string name="lines">Lines</string>
+    <string name="tram">Tram</string>
+    <string name="bus">Bus</string>
+    <string name="favorite_stop">Favorite stop</string>
+
+    <!-- About -->
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="app_license">App License</string>
+    <string name="data_sources">Data Sources</string>
+    <string name="support_source">Support and Source Code</string>
+    <string name="github_repo">GitHub Repository</string>
+    <string name="color_palettes">Color Palettes</string>
 </resources>

@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">BusGasteiz</string>
+
+    <!-- Fitxak -->
+    <string name="tab_stops">Geltokiak</string>
+    <string name="tab_map">Mapa</string>
+    <string name="tab_favorites">Gogokoak</string>
+
+    <!-- Nearby Stops -->
+    <string name="nearby_stops">Inguruko geltokiak</string>
+    <string name="no_nearby_stops">Ez dago geltokiik %d m-ko erradioaren barruan.\nHanditu bilaketa-erradioa.</string>
+    <string name="updated_at">Eguneratuta: %s</string>
+    <string name="error_loading">Errorea datuak kargatzean</string>
+    <string name="retry">Berriro saiatu</string>
+    <string name="refresh">Eguneratu</string>
+    <string name="about">Honi buruz</string>
+    <string name="my_location">Nire kokapena</string>
+
+    <!-- Stop Detail -->
+    <string name="no_arrivals">Ez dago hurrengo 60 minututan iritsieren bat programatuta.</string>
+    <string name="next_scheduled">Hurrengo zerbitzu programatuak</string>
+    <string name="scheduled">Programatua</string>
+    <string name="close">Itxi</string>
+
+    <!-- Favorites -->
+    <string name="no_favorites">Gogoko ez dago</string>
+    <string name="no_favorites_hint">Sakatu izarra geltoki edo linea batean hemen gordetzeko.</string>
+    <string name="loading_data">Datuak kargatzen…</string>
+    <string name="stops">Geltokiak</string>
+    <string name="lines">Lerroak</string>
+    <string name="tram">Tranbia</string>
+    <string name="bus">Autobusa</string>
+    <string name="favorite_stop">Gogoko geltokia</string>
+
+    <!-- About -->
+    <string name="terms_of_service">Zerbitzu-baldintzak</string>
+    <string name="privacy_policy">Pribatutasun-politika</string>
+    <string name="app_license">Aplikazioaren lizentzia</string>
+    <string name="data_sources">Datu-iturriak</string>
+    <string name="support_source">Laguntza eta iturburu-kodea</string>
+    <string name="github_repo">GitHub-eko biltegia</string>
+    <string name="color_palettes">Koloreen paleta</string>
+</resources>

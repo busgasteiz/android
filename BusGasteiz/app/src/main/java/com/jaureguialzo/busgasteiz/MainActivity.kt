@@ -1,91 +1,83 @@
 package com.jaureguialzo.busgasteiz
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
+import com.google.firebase.FirebaseApp
+import com.jaureguialzo.busgasteiz.data.DataRepository
+import com.jaureguialzo.busgasteiz.data.FavoritesRepository
+import com.jaureguialzo.busgasteiz.data.LocationRepository
+import com.jaureguialzo.busgasteiz.settings.AppSettings
 import com.jaureguialzo.busgasteiz.ui.theme.BusGasteizTheme
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var locationRepository: LocationRepository
+
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) locationRepository.startUpdates()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this)
+
+        val dataRepository = DataRepository.getInstance(applicationContext)
+        locationRepository = LocationRepository(this)
+        val favoritesRepository = FavoritesRepository()
+        val appSettings = AppSettings(this)
+
+        // Solicitar permisos de localización
+        val fineGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PermissionChecker.PERMISSION_GRANTED
+        if (fineGranted || coarseGranted) {
+            locationRepository.startUpdates()
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+
         setContent {
             BusGasteizTheme {
-                BusGasteizApp()
-            }
-        }
-    }
-}
-
-@PreviewScreenSizes
-@Composable
-fun BusGasteizApp() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
-
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            AppDestinations.entries.forEach {
-                item(
-                    icon = {
-                        Icon(
-                            painterResource(it.icon),
-                            contentDescription = it.label
-                        )
-                    },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
+                // Iniciar carga de datos al arrancar
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    dataRepository.refreshIfNeeded()
+                }
+                BusGasteizApp(
+                    dataRepository = dataRepository,
+                    locationRepository = locationRepository,
+                    favoritesRepository = favoritesRepository,
+                    appSettings = appSettings
                 )
             }
         }
-    ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
     }
-}
 
-enum class AppDestinations(
-    val label: String,
-    val icon: Int,
-) {
-    HOME("Home", R.drawable.ic_home),
-    FAVORITES("Favorites", R.drawable.ic_favorite),
-    PROFILE("Profile", R.drawable.ic_account_box),
-}
+    override fun onStop() {
+        super.onStop()
+        locationRepository.stopUpdates()
+    }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BusGasteizTheme {
-        Greeting("Android")
+    override fun onStart() {
+        super.onStart()
+        val fineGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PermissionChecker.PERMISSION_GRANTED
+        if (fineGranted || coarseGranted) {
+            locationRepository.startUpdates()
+        }
     }
 }
