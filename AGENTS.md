@@ -9,8 +9,8 @@ Aplicación para Android que visualiza la información en tiempo real de los aut
 ```
 android/BusGasteiz/
 ├── build.gradle.kts                        # Configuración de proyecto (raíz)
-├── google-services.json                    # Configuración de Firebase (mover a app/ antes de compilar)
 ├── app/
+│   ├── google-services.json                # Configuración de Firebase
 │   ├── build.gradle.kts                    # Dependencias y configuración del módulo app
 │   └── src/main/
 │       ├── AndroidManifest.xml
@@ -360,15 +360,8 @@ Acceder desde Compose a través de `AppSettings.searchRadiusFlow.collectAsState(
 
 ## Configuración de Firebase
 
-El fichero `google-services.json` está en la raíz del proyecto (`BusGasteiz/`). El plugin de
-Gradle de Google Services lo espera en el directorio del módulo (`app/`); **moverlo a `app/`
-antes de compilar**:
-
-```
-android/BusGasteiz/
-└── app/
-    └── google-services.json   ← ubicación correcta para el plugin
-```
+El fichero `google-services.json` está en `app/`, que es la ubicación correcta para el plugin
+de Gradle de Google Services.
 
 El plugin y las dependencias de Firebase deben añadirse a los ficheros de build:
 
