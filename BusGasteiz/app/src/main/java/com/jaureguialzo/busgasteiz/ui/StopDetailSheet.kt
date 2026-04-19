@@ -249,7 +249,7 @@ fun ArrivalRow(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Sensors, contentDescription = null, modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(4.dp))
-                        Text("Live", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.live), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             } else {
@@ -263,7 +263,7 @@ fun ArrivalRow(
         Spacer(Modifier.width(8.dp))
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = timeLabel(arrival.predictedTimeEpoch, now),
+                text = timeLabel(arrival.predictedTimeEpoch, now, stringResource(R.string.now)),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -276,10 +276,10 @@ fun ArrivalRow(
     }
 }
 
-private fun timeLabel(epochMs: Long, now: Long): String {
+private fun timeLabel(epochMs: Long, now: Long, nowStr: String): String {
     val mins = minutesUntil(epochMs, now)
     return when {
-        mins < 1 -> "Now"
+        mins < 1 -> nowStr
         mins == 1 -> "1 min"
         mins < 60 -> "$mins min"
         else -> {

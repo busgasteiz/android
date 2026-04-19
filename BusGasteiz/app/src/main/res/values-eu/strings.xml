@@ -40,4 +40,24 @@
     <string name="support_source">Laguntza eta iturburu-kodea</string>
     <string name="github_repo">GitHub-eko biltegia</string>
     <string name="color_palettes">Koloreen paleta</string>
+    <string name="copyright">© 2026 Ion Jaureguialzo Sarasola. Eskubide guztiak erreserbatuak.</string>
+    <string name="terms_of_service_text">BusGasteiz iturri ofizialetatik eskuragarri dauden datu irekien ikustaile bat da. Ez dago garraio-operadore edo agintaritza publiko batekin erlazionatuta. Aplikazioa horrela ematen da, mota guztietako bermerik gabe, esplizitu nahiz inplizitu.</string>
+    <string name="privacy_policy_text">BusGasteizek ez du datu pertsonalik biltzen, gordetzen edo partekatzen.</string>
+    <string name="testing">Probak</string>
+    <string name="simulate_alerts">Zerbitzu-alertak simulatu</string>
+    <string name="simulate_alerts_description">Ausaz esleitzen die alertak geldiuneei eta linei (%30 probabilitatea). Arazketa-eraikuntzetan bakarrik ikusgai.</string>
+
+    <!-- Karga mezuak -->
+    <string name="loading_downloading_gtfs">GTFS datuak deskargatzen…</string>
+    <string name="loading_extracting_gtfs">GTFS datuak erauzten…</string>
+    <string name="loading_downloading_tram">Tranbiaren datuak deskargatzen…</string>
+    <string name="loading_extracting_tram">Tranbiaren datuak erauzten…</string>
+    <string name="loading_downloading_realtime">Denbora errealeko datuak deskargatzen…</string>
+    <string name="loading_processing">Datuak prozesatzen…</string>
+    <string name="starting_up">Abiatzen…</string>
+
+    <!-- Iritze-denborak -->
+    <string name="live">Zuzenean</string>
+    <string name="now">Orain</string>
+    <string name="no_more_arrivals">%s lineak ez du gehiago iritsierarik hurrengo 60 minututan.</string>
 </resources>

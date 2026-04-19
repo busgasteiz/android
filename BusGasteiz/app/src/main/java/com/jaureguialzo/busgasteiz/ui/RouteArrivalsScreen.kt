@@ -159,7 +159,7 @@ fun RouteArrivalsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "No more arrivals of line $routeShortName in the next 60 minutes.",
+                            stringResource(R.string.no_more_arrivals, routeShortName),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )

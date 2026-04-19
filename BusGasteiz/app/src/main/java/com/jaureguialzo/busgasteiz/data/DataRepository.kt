@@ -1,6 +1,7 @@
 package com.jaureguialzo.busgasteiz.data
 
 import android.content.Context
+import com.jaureguialzo.busgasteiz.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -114,11 +115,11 @@ class DataRepository(private val appContext: Context) : ViewModel() {
 
             // GTFS estático Tuvisa: descargar solo si no está fresco
             if (!isGtfsFresh()) {
-                if (!hasData) _loadState.value = LoadState.Loading("Downloading GTFS data…")
+                if (!hasData) _loadState.value = LoadState.Loading(appContext.getString(R.string.loading_downloading_gtfs))
                 println("[DataRepository] Descargando GTFS ZIP Tuvisa…")
                 val zipData = withContext(Dispatchers.IO) { downloadBytes(TUVISA_GTFS_URL) }
                 println("[DataRepository] ZIP descargado: ${zipData.size} bytes")
-                if (!hasData) _loadState.value = LoadState.Loading("Extracting GTFS data…")
+                if (!hasData) _loadState.value = LoadState.Loading(appContext.getString(R.string.loading_extracting_gtfs))
                 withContext(Dispatchers.IO) { ZipExtractor.extract(zipData, gtfsDir) }
                 println("[DataRepository] ZIP descomprimido")
             } else {
@@ -127,11 +128,11 @@ class DataRepository(private val appContext: Context) : ViewModel() {
 
             // GTFS estático Euskotren: descargar solo si no está fresco
             if (!isEuskoTranFresh()) {
-                if (!hasData) _loadState.value = LoadState.Loading("Downloading tram data…")
+                if (!hasData) _loadState.value = LoadState.Loading(appContext.getString(R.string.loading_downloading_tram))
                 println("[DataRepository] Descargando GTFS ZIP Euskotren…")
                 val tramZip = withContext(Dispatchers.IO) { downloadBytes(EUSKOTREN_GTFS_URL) }
                 println("[DataRepository] ZIP Euskotren descargado: ${tramZip.size} bytes")
-                if (!hasData) _loadState.value = LoadState.Loading("Extracting tram data…")
+                if (!hasData) _loadState.value = LoadState.Loading(appContext.getString(R.string.loading_extracting_tram))
                 withContext(Dispatchers.IO) { ZipExtractor.extract(tramZip, euskotrenGtfsDir) }
                 println("[DataRepository] ZIP Euskotren descomprimido")
             } else {
@@ -139,7 +140,7 @@ class DataRepository(private val appContext: Context) : ViewModel() {
             }
 
             // Feed RT Tuvisa: siempre actualizar
-            if (!hasData) _loadState.value = LoadState.Loading("Downloading real-time data…")
+            if (!hasData) _loadState.value = LoadState.Loading(appContext.getString(R.string.loading_downloading_realtime))
             println("[DataRepository] Descargando feed RT Tuvisa…")
             val pbData = withContext(Dispatchers.IO) { downloadBytes(TUVISA_RT_URL) }
             println("[DataRepository] Feed RT Tuvisa: ${pbData.size} bytes")
@@ -172,7 +173,7 @@ class DataRepository(private val appContext: Context) : ViewModel() {
             }
 
             // Parsear en background
-            if (!hasData) _loadState.value = LoadState.Loading("Processing data…")
+            if (!hasData) _loadState.value = LoadState.Loading(appContext.getString(R.string.loading_processing))
             val (parsed, delays, alerts) = withContext(Dispatchers.IO) { parseInBackground() }
             println("[DataRepository] Parseados: ${parsed.stops.size} paradas (${parsed.stops.values.count { it.isTram }} tranvía), ${delays.size} trips RT")
 

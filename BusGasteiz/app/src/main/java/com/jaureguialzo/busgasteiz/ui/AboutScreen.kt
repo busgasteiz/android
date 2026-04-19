@@ -58,7 +58,7 @@ fun AboutScreen(
             item {
                 SectionHeader(text = "")
                 Text(
-                    text = "© 2026 Ion Jaureguialzo Sarasola. Todos los derechos reservados.",
+                    text = stringResource(R.string.copyright),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -70,7 +70,7 @@ fun AboutScreen(
             item {
                 SectionHeader(text = stringResource(R.string.terms_of_service))
                 Text(
-                    text = "BusGasteiz is a viewer of publicly available open data from official sources. It is not affiliated with any transport operator or public authority. The app is provided as-is, without warranty of any kind, express or implied.",
+                    text = stringResource(R.string.terms_of_service_text),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -82,7 +82,7 @@ fun AboutScreen(
             item {
                 SectionHeader(text = stringResource(R.string.privacy_policy))
                 Text(
-                    text = "BusGasteiz does not collect, store or share any personal data of any kind.",
+                    text = stringResource(R.string.privacy_policy_text),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -158,13 +158,13 @@ fun AboutScreen(
             // Sección de pruebas (solo DEBUG)
             if (BuildConfig.DEBUG) {
                 item {
-                    SectionHeader(text = "Testing")
+                    SectionHeader(text = stringResource(R.string.testing))
                     androidx.compose.foundation.layout.Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
                         Text(
-                            "Simulate service alerts",
+                            stringResource(R.string.simulate_alerts),
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -174,7 +174,7 @@ fun AboutScreen(
                         )
                     }
                     Text(
-                        "Randomly assigns fake service alerts (30% probability) to stops and routes. Only visible in debug builds.",
+                        stringResource(R.string.simulate_alerts_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)

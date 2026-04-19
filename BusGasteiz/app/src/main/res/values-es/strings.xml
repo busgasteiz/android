@@ -40,4 +40,24 @@
     <string name="support_source">Soporte y código fuente</string>
     <string name="github_repo">Repositorio en GitHub</string>
     <string name="color_palettes">Paletas de colores</string>
+    <string name="copyright">© 2026 Ion Jaureguialzo Sarasola. Todos los derechos reservados.</string>
+    <string name="terms_of_service_text">BusGasteiz es un visor de datos abiertos públicamente disponibles de fuentes oficiales. No está afiliado a ningún operador de transporte ni autoridad pública. La app se proporciona tal cual, sin garantía de ningún tipo, expresa o implícita.</string>
+    <string name="privacy_policy_text">BusGasteiz no recopila, almacena ni comparte ningún dato personal de ningún tipo.</string>
+    <string name="testing">Pruebas</string>
+    <string name="simulate_alerts">Simular alertas de servicio</string>
+    <string name="simulate_alerts_description">Asigna aleatoriamente alertas de servicio falsas (30% de probabilidad) a paradas y líneas. Solo visible en compilaciones de depuración.</string>
+
+    <!-- Mensajes de carga -->
+    <string name="loading_downloading_gtfs">Descargando datos GTFS…</string>
+    <string name="loading_extracting_gtfs">Extrayendo datos GTFS…</string>
+    <string name="loading_downloading_tram">Descargando datos del tranvía…</string>
+    <string name="loading_extracting_tram">Extrayendo datos del tranvía…</string>
+    <string name="loading_downloading_realtime">Descargando datos en tiempo real…</string>
+    <string name="loading_processing">Procesando datos…</string>
+    <string name="starting_up">Iniciando…</string>
+
+    <!-- Tiempos de llegada -->
+    <string name="live">En directo</string>
+    <string name="now">Ahora</string>
+    <string name="no_more_arrivals">No hay más llegadas de la línea %s en los próximos 60 minutos.</string>
 </resources>

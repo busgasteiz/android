@@ -152,7 +152,7 @@ fun NearbyStopsScreen(
         when (val state = loadState) {
             is DataRepository.LoadState.Idle,
             is DataRepository.LoadState.Loading -> {
-                val msg = if (state is DataRepository.LoadState.Loading) state.message else "Starting up…"
+                val msg = if (state is DataRepository.LoadState.Loading) state.message else stringResource(R.string.starting_up)
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()

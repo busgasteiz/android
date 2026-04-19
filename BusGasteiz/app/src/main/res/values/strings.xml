@@ -40,4 +40,24 @@
     <string name="support_source">Support and Source Code</string>
     <string name="github_repo">GitHub Repository</string>
     <string name="color_palettes">Color Palettes</string>
+    <string name="copyright">© 2026 Ion Jaureguialzo Sarasola. All rights reserved.</string>
+    <string name="terms_of_service_text">BusGasteiz is a viewer of publicly available open data from official sources. It is not affiliated with any transport operator or public authority. The app is provided as-is, without warranty of any kind, express or implied.</string>
+    <string name="privacy_policy_text">BusGasteiz does not collect, store or share any personal data of any kind.</string>
+    <string name="testing">Testing</string>
+    <string name="simulate_alerts">Simulate service alerts</string>
+    <string name="simulate_alerts_description">Randomly assigns fake service alerts (30% probability) to stops and routes. Only visible in debug builds.</string>
+
+    <!-- Loading messages -->
+    <string name="loading_downloading_gtfs">Downloading GTFS data…</string>
+    <string name="loading_extracting_gtfs">Extracting GTFS data…</string>
+    <string name="loading_downloading_tram">Downloading tram data…</string>
+    <string name="loading_extracting_tram">Extracting tram data…</string>
+    <string name="loading_downloading_realtime">Downloading real-time data…</string>
+    <string name="loading_processing">Processing data…</string>
+    <string name="starting_up">Starting up…</string>
+
+    <!-- Arrival times -->
+    <string name="live">Live</string>
+    <string name="now">Now</string>
+    <string name="no_more_arrivals">No more arrivals of line %s in the next 60 minutes.</string>
 </resources>
