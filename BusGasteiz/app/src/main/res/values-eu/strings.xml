@@ -38,6 +38,7 @@
     <string name="sync_across_devices">Sinkronizatu gogokoak zure gailu guztietan</string>
     <string name="sign_in_with_google">Hasi saioa Googlerekin</string>
     <string name="synced_as">Sinkronizatua, honen gisa: %s</string>
+    <string name="no_google_account">Gogokoak sinkronizatzeko, gehitu Google kontu bat lehenik gailu honetara.</string>
 
     <!-- About -->
     <string name="terms_of_service">Zerbitzu-baldintzak</string>

@@ -27,6 +27,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -54,6 +57,7 @@ import com.jaureguialzo.busgasteiz.data.FavoritesRepository
 import com.jaureguialzo.busgasteiz.data.LocationRepository
 import com.jaureguialzo.busgasteiz.ui.components.RouteBadge
 import com.jaureguialzo.busgasteiz.ui.components.StopIcon
+import androidx.credentials.exceptions.NoCredentialException
 import kotlinx.coroutines.launch
 
 // MARK: - Pantalla de favoritos
@@ -78,6 +82,19 @@ fun FavoritesScreen(
 
     val scope = rememberCoroutineScope()
     val activity = LocalContext.current as ComponentActivity
+    val snackbarHostState = remember { SnackbarHostState() }
+    val noGoogleAccountMessage = stringResource(R.string.no_google_account)
+
+    fun onSignIn() {
+        scope.launch {
+            val result = authRepository.signIn(activity)
+            result.onFailure { e ->
+                if (e is NoCredentialException) {
+                    snackbarHostState.showSnackbar(noGoogleAccountMessage)
+                }
+            }
+        }
+    }
 
     // Estado local de pull-to-refresh: solo activo cuando el usuario arrastra,
     // no cuando el refresco se dispara desde el botón de la toolbar.
@@ -87,6 +104,11 @@ fun FavoritesScreen(
     }
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(snackbarData = data)
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.tab_favorites)) },
@@ -134,7 +156,7 @@ fun FavoritesScreen(
                         )
                         if (authState is AuthState.Anonymous) {
                             Spacer(Modifier.height(24.dp))
-                            SyncBanner(onSignIn = { scope.launch { authRepository.signIn(activity) } })
+                            SyncBanner(onSignIn = ::onSignIn)
                         }
                     }
                 }
@@ -186,7 +208,7 @@ fun FavoritesScreen(
                         if (authState is AuthState.Anonymous) {
                             item {
                                 SyncBanner(
-                                    onSignIn = { scope.launch { authRepository.signIn(activity) } },
+                                    onSignIn = ::onSignIn,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                                 )
                             }
