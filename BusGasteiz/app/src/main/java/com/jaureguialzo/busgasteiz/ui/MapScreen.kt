@@ -168,7 +168,7 @@ fun MapScreen(
                     }
                     Box {
                         TextButton(onClick = { showRadiusMenu = true }) {
-                            Text("${searchRadius.toInt()} m")
+                            Text("${searchRadius.toInt()} m", color = MaterialTheme.colorScheme.onSurface)
                         }
                         DropdownMenu(
                             expanded = showRadiusMenu,
