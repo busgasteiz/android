@@ -53,10 +53,19 @@ import com.jaureguialzo.busgasteiz.data.NearbyStop
 import com.jaureguialzo.busgasteiz.data.computeStopsInBounds
 import com.jaureguialzo.busgasteiz.settings.AppSettings
 import com.jaureguialzo.busgasteiz.ui.components.StopIcon
+import kotlin.math.cos
+import kotlin.math.log2
+import kotlin.math.PI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+// Convierte un radio en metros al nivel de zoom de Google Maps adecuado para visualizarlo
+private fun radiusToZoom(radius: Float, lat: Double): Float {
+    val cosLat = cos(lat * PI / 180.0)
+    return log2(156543.03392 * cosLat * 360.0 / (radius * 1.5)).toFloat()
+}
 
 // MARK: - Mapa de paradas
 
@@ -143,6 +152,20 @@ fun MapScreen(
             CameraUpdateFactory.newLatLngZoom(LatLng(pos.latitude, pos.longitude), cameraPositionState.position.zoom)
         )
         recompute()
+    }
+
+    // Ajusta el zoom del mapa cuando cambia el radio de búsqueda
+    var isFirstSearchRadius by remember { mutableStateOf(true) }
+    LaunchedEffect(searchRadius) {
+        if (isFirstSearchRadius) {
+            isFirstSearchRadius = false
+            return@LaunchedEffect
+        }
+        val center = cameraPositionState.position.target
+        val zoom = radiusToZoom(searchRadius, center.latitude)
+        cameraPositionState.animate(
+            CameraUpdateFactory.newLatLngZoom(center, zoom)
+        )
     }
 
     Scaffold(
