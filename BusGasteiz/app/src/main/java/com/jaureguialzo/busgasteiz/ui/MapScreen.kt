@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NearMe
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -70,6 +71,7 @@ fun MapScreen(
     val locationVersion by locationRepository.locationVersion.collectAsState()
     val location by locationRepository.location.collectAsState()
     val activePosition by locationRepository.activePosition.collectAsState()
+    val isRefreshing by dataRepository.isRefreshing.collectAsState()
     val searchRadius by appSettings.searchRadiusFlow.collectAsState(initial = 200f)
 
     val mapStops = remember { mutableStateListOf<NearbyStop>() }
@@ -181,6 +183,17 @@ fun MapScreen(
                                     }
                                 )
                             }
+                        }
+                    }
+                    // Botón de recarga de datos
+                    IconButton(
+                        onClick = { dataRepository.forceRefresh() },
+                        enabled = !isRefreshing
+                    ) {
+                        if (isRefreshing) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh))
                         }
                     }
                 }

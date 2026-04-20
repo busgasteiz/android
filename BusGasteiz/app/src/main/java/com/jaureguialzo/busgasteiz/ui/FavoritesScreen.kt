@@ -162,7 +162,12 @@ fun FavoritesScreen(
                             items(stopRows, key = { it.first.id }) { (stop, dist, hasArrivals) ->
                                 ListItem(
                                     headlineContent = { Text(stop.localizedName) },
-                                    supportingContent = { Text(distanceLabel(dist)) },
+                                    supportingContent = {
+                                        Text(
+                                            distanceLabel(dist),
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    },
                                     leadingContent = {
                                         StopIcon(
                                             size = 40.dp,
