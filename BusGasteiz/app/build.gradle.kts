@@ -18,10 +18,12 @@ android {
 
     defaultConfig {
         applicationId = "com.jaureguialzo.busgasteiz"
+
+        versionName = "1.0.0"
+        versionCode = 1
+
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY", "")
     }
@@ -29,7 +31,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
