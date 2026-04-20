@@ -34,6 +34,11 @@
     <string name="bus">Autobusa</string>
     <string name="favorite_stop">Gogoko geltokia</string>
 
+    <!-- Sinkronizazio-panela -->
+    <string name="sync_across_devices">Sinkronizatu gogokoak zure gailu guztietan</string>
+    <string name="sign_in_with_google">Hasi saioa Googlerekin</string>
+    <string name="synced_as">Sinkronizatua, honen gisa: %s</string>
+
     <!-- About -->
     <string name="terms_of_service">Zerbitzu-baldintzak</string>
     <string name="privacy_policy">Pribatutasun-politika</string>

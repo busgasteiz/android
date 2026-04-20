@@ -1,6 +1,7 @@
 package com.jaureguialzo.busgasteiz.data
 
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -8,12 +9,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-// MARK: - Favoritos sincronizados con Firestore (auth anónima)
+// MARK: - Favoritos sincronizados con Firestore
 
-class FavoritesRepository {
+class FavoritesRepository(private val authRepository: AuthRepository) {
 
     private val auth = Firebase.auth
     private val db = Firebase.firestore
@@ -27,10 +30,21 @@ class FavoritesRepository {
     val isEmpty: Boolean
         get() = _favoriteStopIds.value.isEmpty() && _favoriteRouteKeys.value.isEmpty()
 
+    // Registro del listener activo para cancelarlo antes de reconectar con un UID nuevo.
+    private var listenerRegistration: ListenerRegistration? = null
+
     init {
         CoroutineScope(Dispatchers.IO).launch {
             ensureSignedIn()
             attachListener()
+        }
+        // Cuando el usuario pasa de anónimo a Google (o viceversa), el UID cambia:
+        // eliminamos el listener antiguo y conectamos uno nuevo al documento correcto.
+        CoroutineScope(Dispatchers.IO).launch {
+            authRepository.authState
+                .drop(1)
+                .filterNot { it is AuthState.Loading }
+                .collect { attachListener() }
         }
     }
 
@@ -45,8 +59,10 @@ class FavoritesRepository {
     }
 
     private fun attachListener() {
+        listenerRegistration?.remove()
         val uid = auth.currentUser?.uid ?: return
-        db.collection("users").document(uid).collection("favorites").document("data")
+        listenerRegistration = db.collection("users").document(uid)
+            .collection("favorites").document("data")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     println("[FavoritesRepository] Error Firestore: $error")

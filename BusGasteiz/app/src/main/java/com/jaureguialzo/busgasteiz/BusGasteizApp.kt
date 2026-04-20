@@ -25,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.jaureguialzo.busgasteiz.data.AuthRepository
 import com.jaureguialzo.busgasteiz.data.DataRepository
 import com.jaureguialzo.busgasteiz.data.FavoritesRepository
 import com.jaureguialzo.busgasteiz.data.LocationRepository
@@ -43,6 +44,7 @@ fun BusGasteizApp(
     dataRepository: DataRepository,
     locationRepository: LocationRepository,
     favoritesRepository: FavoritesRepository,
+    authRepository: AuthRepository,
     appSettings: AppSettings
 ) {
     val context = LocalContext.current
@@ -114,7 +116,8 @@ fun BusGasteizApp(
                     navController = favoritesNavController,
                     dataRepository = dataRepository,
                     locationRepository = locationRepository,
-                    favoritesRepository = favoritesRepository
+                    favoritesRepository = favoritesRepository,
+                    authRepository = authRepository
                 )
             }
         }
@@ -203,7 +206,8 @@ private fun FavoritesNavGraph(
     navController: NavController,
     dataRepository: DataRepository,
     locationRepository: LocationRepository,
-    favoritesRepository: FavoritesRepository
+    favoritesRepository: FavoritesRepository,
+    authRepository: AuthRepository
 ) {
     NavHost(
         navController = navController as androidx.navigation.NavHostController,
@@ -215,6 +219,7 @@ private fun FavoritesNavGraph(
                 dataRepository = dataRepository,
                 locationRepository = locationRepository,
                 favoritesRepository = favoritesRepository,
+                authRepository = authRepository,
                 navController = navController
             )
         }

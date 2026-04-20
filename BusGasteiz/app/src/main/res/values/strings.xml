@@ -34,6 +34,11 @@
     <string name="bus">Bus</string>
     <string name="favorite_stop">Favorite stop</string>
 
+    <!-- Sync banner -->
+    <string name="sync_across_devices">Sync your favorites across all your devices</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="synced_as">Synced as %s</string>
+
     <!-- About -->
     <string name="terms_of_service">Terms of Service</string>
     <string name="privacy_policy">Privacy Policy</string>

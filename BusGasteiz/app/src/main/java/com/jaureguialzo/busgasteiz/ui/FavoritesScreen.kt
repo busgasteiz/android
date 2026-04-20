@@ -16,6 +16,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -25,6 +28,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -33,18 +37,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.activity.ComponentActivity
 import androidx.navigation.NavController
 import com.jaureguialzo.busgasteiz.R
+import com.jaureguialzo.busgasteiz.data.AuthRepository
+import com.jaureguialzo.busgasteiz.data.AuthState
 import com.jaureguialzo.busgasteiz.data.DataRepository
 import com.jaureguialzo.busgasteiz.data.FavoritesRepository
 import com.jaureguialzo.busgasteiz.data.LocationRepository
 import com.jaureguialzo.busgasteiz.ui.components.RouteBadge
 import com.jaureguialzo.busgasteiz.ui.components.StopIcon
+import kotlinx.coroutines.launch
 
 // MARK: - Pantalla de favoritos
 
@@ -54,6 +64,7 @@ fun FavoritesScreen(
     dataRepository: DataRepository,
     locationRepository: LocationRepository,
     favoritesRepository: FavoritesRepository,
+    authRepository: AuthRepository,
     navController: NavController
 ) {
     val gtfsData by dataRepository.gtfsData.collectAsState()
@@ -63,6 +74,10 @@ fun FavoritesScreen(
     val location by locationRepository.location.collectAsState()
     val activeStopIds by dataRepository.activeStopIds.collectAsState()
     val alerts by dataRepository.serviceAlerts.collectAsState()
+    val authState by authRepository.authState.collectAsState()
+
+    val scope = rememberCoroutineScope()
+    val activity = LocalContext.current as ComponentActivity
 
     // Estado local de pull-to-refresh: solo activo cuando el usuario arrastra,
     // no cuando el refresco se dispara desde el botón de la toolbar.
@@ -117,6 +132,10 @@ fun FavoritesScreen(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
+                        if (authState is AuthState.Anonymous) {
+                            Spacer(Modifier.height(24.dp))
+                            SyncBanner(onSignIn = { scope.launch { authRepository.signIn(activity) } })
+                        }
                     }
                 }
             }
@@ -163,6 +182,16 @@ fun FavoritesScreen(
                     modifier = Modifier.padding(padding)
                 ) {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        // Banner de sincronización (solo cuando la sesión es anónima)
+                        if (authState is AuthState.Anonymous) {
+                            item {
+                                SyncBanner(
+                                    onSignIn = { scope.launch { authRepository.signIn(activity) } },
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
+                            }
+                        }
+
                         // Sección de paradas favoritas
                         if (stopRows.isNotEmpty()) {
                             item {
@@ -241,6 +270,41 @@ fun FavoritesScreen(
                         item { Spacer(Modifier.height(16.dp)) }
                     }
                 }
+            }
+        }
+    }
+}
+
+// MARK: - Banner de sincronización entre dispositivos
+
+@Composable
+private fun SyncBanner(onSignIn: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Sync,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                stringResource(R.string.sync_across_devices),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(Modifier.width(8.dp))
+            TextButton(onClick = onSignIn) {
+                Text(stringResource(R.string.sign_in_with_google))
             }
         }
     }
