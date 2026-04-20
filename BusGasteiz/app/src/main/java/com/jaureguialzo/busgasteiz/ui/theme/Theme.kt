@@ -16,22 +16,22 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Blue80,
-    secondary = BlueGrey80,
+    primary = Green80,
+    secondary = GreenGrey80,
     tertiary = Teal80
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Blue40,
-    secondary = BlueGrey40,
+    primary = Green40,
+    secondary = GreenGrey40,
     tertiary = Teal40
 )
 
 @Composable
 fun BusGasteizTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Color dinámico disponible en Android 12+
-    dynamicColor: Boolean = true,
+    // Color dinámico desactivado: se usa siempre la paleta verde de marca de BusGasteiz.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

@@ -2,11 +2,17 @@ package com.jaureguialzo.busgasteiz.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Colores de BusGasteiz — inspirados en los azules de la app iOS
-val Blue80 = Color(0xFF82B4FF)
-val BlueGrey80 = Color(0xFFB8C8E8)
-val Teal80 = Color(0xFF80DEEA)
+// Paleta derivada del AccentColor de iOS: #60A589 (sRGB 0x60, 0xA5, 0x89)
+// Generada siguiendo las reglas tonales de Material 3 (tono 80 para dark, 40 para light).
 
-val Blue40 = Color(0xFF1565C0)
-val BlueGrey40 = Color(0xFF37474F)
-val Teal40 = Color(0xFF00838F)
+// Primario — verde (#60A589 como semilla)
+val Green80 = Color(0xFF7DD5AB)   // tono 80: claro, para dark mode
+val Green40 = Color(0xFF1D6B51)   // tono 40: oscuro, para light mode
+
+// Secundario — verde apagado
+val GreenGrey80 = Color(0xFFB2CCBE)
+val GreenGrey40 = Color(0xFF4A6358)
+
+// Terciario — teal (matiz desplazado)
+val Teal80 = Color(0xFFA7CDDA)
+val Teal40 = Color(0xFF3A6374)
