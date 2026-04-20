@@ -116,8 +116,7 @@ fun BusGasteizApp(
                     navController = favoritesNavController,
                     dataRepository = dataRepository,
                     locationRepository = locationRepository,
-                    favoritesRepository = favoritesRepository,
-                    authRepository = authRepository
+                    favoritesRepository = favoritesRepository
                 )
             }
         }
@@ -206,8 +205,7 @@ private fun FavoritesNavGraph(
     navController: NavController,
     dataRepository: DataRepository,
     locationRepository: LocationRepository,
-    favoritesRepository: FavoritesRepository,
-    authRepository: AuthRepository
+    favoritesRepository: FavoritesRepository
 ) {
     NavHost(
         navController = navController as androidx.navigation.NavHostController,
@@ -219,7 +217,6 @@ private fun FavoritesNavGraph(
                 dataRepository = dataRepository,
                 locationRepository = locationRepository,
                 favoritesRepository = favoritesRepository,
-                authRepository = authRepository,
                 navController = navController
             )
         }

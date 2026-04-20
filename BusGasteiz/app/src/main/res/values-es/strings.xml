@@ -34,12 +34,6 @@
     <string name="bus">Autobús</string>
     <string name="favorite_stop">Parada favorita</string>
 
-    <!-- Banner de sincronización -->
-    <string name="sync_across_devices">Sincroniza tus favoritos en todos tus dispositivos</string>
-    <string name="sign_in_with_google">Iniciar sesión con Google</string>
-    <string name="synced_as">Sincronizado como %s</string>
-    <string name="no_google_account">Para sincronizar tus favoritos, añade primero una cuenta Google a este dispositivo.</string>
-
     <!-- About -->
     <string name="terms_of_service">Términos de servicio</string>
     <string name="privacy_policy">Política de privacidad</string>

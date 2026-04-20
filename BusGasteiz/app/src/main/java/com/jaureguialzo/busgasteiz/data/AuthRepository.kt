@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -55,13 +54,17 @@ class AuthRepository(private val context: Context) {
         }
     }
 
-    // Intento silencioso al arrancar: solo cuentas ya autorizadas, sin mostrar UI.
+    // Intento silencioso al arrancar: sin UI en ningún caso.
+    // Paso 1: cuentas ya autorizadas previamente (otro dispositivo).
+    // Paso 2: si hay exactamente una cuenta Google en el dispositivo, se selecciona sola.
+    // En cualquier otro caso (sin cuentas, múltiples cuentas) se queda con auth anónima.
     suspend fun trySilentSignIn(activity: ComponentActivity) {
         if (auth.currentUser?.isAnonymous == false) return
 
         val serverClientId = serverClientId() ?: return
 
-        val request = GetCredentialRequest.Builder()
+        // Paso 1: cuentas ya autorizadas
+        val authorizedRequest = GetCredentialRequest.Builder()
             .addCredentialOption(
                 GetGoogleIdOption.Builder()
                     .setAutoSelectEnabled(true)
@@ -72,37 +75,29 @@ class AuthRepository(private val context: Context) {
             .build()
 
         try {
-            val result = credentialManager.getCredential(activity, request)
+            val result = credentialManager.getCredential(activity, authorizedRequest)
             processCredential(GoogleIdTokenCredential.createFrom(result.credential.data).idToken)
+            return
         } catch (e: GetCredentialException) {
-            // Sin credenciales guardadas o múltiples cuentas: seguimos anónimos.
+            // Continúa al paso 2
         }
-    }
 
-    // Sign-in interactivo iniciado por el usuario: muestra el selector de cuenta.
-    suspend fun signIn(activity: ComponentActivity): Result<Unit> {
-        val serverClientId = serverClientId()
-            ?: return Result.failure(Exception("default_web_client_id no disponible"))
-
-        val request = GetCredentialRequest.Builder()
+        // Paso 2: única cuenta en el dispositivo (autoSelect solo funciona con una)
+        val singleAccountRequest = GetCredentialRequest.Builder()
             .addCredentialOption(
                 GetGoogleIdOption.Builder()
-                    .setAutoSelectEnabled(false)
+                    .setAutoSelectEnabled(true)
                     .setFilterByAuthorizedAccounts(false)
                     .setServerClientId(serverClientId)
                     .build()
             )
             .build()
 
-        return try {
-            val result = credentialManager.getCredential(activity, request)
+        try {
+            val result = credentialManager.getCredential(activity, singleAccountRequest)
             processCredential(GoogleIdTokenCredential.createFrom(result.credential.data).idToken)
-            Result.success(Unit)
-        } catch (e: GetCredentialCancellationException) {
-            Result.failure(e)
         } catch (e: GetCredentialException) {
-            println("[AuthRepository] Error en sign-in: $e")
-            Result.failure(e)
+            // Sin cuentas o múltiples cuentas: seguimos anónimos, sin mensaje.
         }
     }
 
