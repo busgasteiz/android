@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -87,6 +87,7 @@ fun NearbyStopsScreen(
     val scope = rememberCoroutineScope()
     var recomputeJob by remember { mutableStateOf<Job?>(null) }
     var showRadiusMenu by remember { mutableStateOf(false) }
+    var isResolvingLocation by remember { mutableStateOf(false) }
 
     fun recompute() {
         val gtfs = dataRepository.gtfsData.value ?: return
@@ -113,8 +114,22 @@ fun NearbyStopsScreen(
                 title = { Text(stringResource(R.string.nearby_stops)) },
                 actions = {
                     // Botón de localización
-                    IconButton(onClick = { locationRepository.resolveActivePosition() }) {
-                        Icon(Icons.Default.MyLocation, contentDescription = stringResource(R.string.my_location))
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                isResolvingLocation = true
+                                locationRepository.resolveActivePosition()
+                                kotlinx.coroutines.delay(1000)
+                                isResolvingLocation = false
+                            }
+                        },
+                        enabled = !isResolvingLocation
+                    ) {
+                        if (isResolvingLocation) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Default.NearMe, contentDescription = stringResource(R.string.my_location))
+                        }
                     }
                     // Menú de radio de búsqueda
                     Box {

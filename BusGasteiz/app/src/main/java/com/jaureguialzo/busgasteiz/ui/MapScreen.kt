@@ -6,13 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -72,13 +70,13 @@ fun MapScreen(
     val locationVersion by locationRepository.locationVersion.collectAsState()
     val location by locationRepository.location.collectAsState()
     val activePosition by locationRepository.activePosition.collectAsState()
-    val isRefreshing by dataRepository.isRefreshing.collectAsState()
     val searchRadius by appSettings.searchRadiusFlow.collectAsState(initial = 200f)
 
     val mapStops = remember { mutableStateListOf<NearbyStop>() }
     val scope = rememberCoroutineScope()
     var recomputeJob by remember { mutableStateOf<Job?>(null) }
     var showRadiusMenu by remember { mutableStateOf(false) }
+    var isResolvingLocation by remember { mutableStateOf(false) }
 
     var selectedStop by remember { mutableStateOf<NearbyStop?>(null) }
     var showStopSheet by remember { mutableStateOf(false) }
@@ -148,6 +146,24 @@ fun MapScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.tab_map)) },
                 actions = {
+                    // Botón de localización
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                isResolvingLocation = true
+                                locationRepository.resolveActivePosition()
+                                kotlinx.coroutines.delay(1000)
+                                isResolvingLocation = false
+                            }
+                        },
+                        enabled = !isResolvingLocation
+                    ) {
+                        if (isResolvingLocation) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Default.NearMe, contentDescription = stringResource(R.string.my_location))
+                        }
+                    }
                     Box {
                         TextButton(onClick = { showRadiusMenu = true }) {
                             Text("${searchRadius.toInt()} m")
@@ -167,25 +183,8 @@ fun MapScreen(
                             }
                         }
                     }
-                    IconButton(
-                        onClick = { dataRepository.forceRefresh() },
-                        enabled = !isRefreshing
-                    ) {
-                        if (isRefreshing) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                        } else {
-                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh))
-                        }
-                    }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                locationRepository.resolveActivePosition()
-            }) {
-                Icon(Icons.Default.MyLocation, contentDescription = stringResource(R.string.my_location))
-            }
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
