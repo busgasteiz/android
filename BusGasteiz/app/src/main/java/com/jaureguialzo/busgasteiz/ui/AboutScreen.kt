@@ -3,11 +3,18 @@ package com.jaureguialzo.busgasteiz.ui
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Tram
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -19,9 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -101,6 +108,7 @@ fun AboutScreen(
                     },
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
+                    Icon(Icons.Default.Description, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                     Text("Apache License 2.0")
                 }
                 HorizontalDivider()
@@ -112,16 +120,19 @@ fun AboutScreen(
                 DataSourceLink(
                     name = "Ayuntamiento de Vitoria-Gasteiz – TUVISA bus lines",
                     license = "CC BY",
+                    icon = Icons.Default.DirectionsBus,
                     url = "https://www.vitoria-gasteiz.org/wb021/was/contenidoAction.do?uid=app_j34_0021&idioma=es"
                 )
                 DataSourceLink(
                     name = "Ayuntamiento de Vitoria-Gasteiz – TUVISA real-time data",
                     license = "CC BY",
+                    icon = Icons.Default.Sensors,
                     url = "https://www.vitoria-gasteiz.org/wb021/was/contenidoAction.do?uid=app_j34_0022&idioma=es"
                 )
                 DataSourceLink(
                     name = "Open Data Euskadi – Moveuskadi",
                     license = "CC BY",
+                    icon = Icons.Default.Tram,
                     url = "https://opendata.euskadi.eus/catalogo/-/moveuskadi-datos-de-la-red-de-transporte-publico-de-euskadi-operadores-horarios-paradas-calendario-tarifas-etc/"
                 )
                 HorizontalDivider()
@@ -150,6 +161,7 @@ fun AboutScreen(
                 DataSourceLink(
                     name = "Autumn Rainbow – COLOURlovers",
                     license = "CC BY-NC-SA",
+                    icon = Icons.Default.Palette,
                     url = "http://www.colourlovers.com/palette/3240116/%E2%80%A2Autumn_Rainbow%E2%80%A2"
                 )
                 HorizontalDivider()
@@ -159,10 +171,16 @@ fun AboutScreen(
             if (BuildConfig.DEBUG) {
                 item {
                     SectionHeader(text = stringResource(R.string.testing))
-                    androidx.compose.foundation.layout.Row(
+                    Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp),
+                            tint = MaterialTheme.colorScheme.error
+                        )
                         Text(
                             stringResource(R.string.simulate_alerts),
                             modifier = Modifier.weight(1f),
@@ -199,12 +217,13 @@ private fun SectionHeader(text: String) {
 }
 
 @Composable
-private fun DataSourceLink(name: String, license: String, url: String) {
+private fun DataSourceLink(name: String, license: String, icon: ImageVector, url: String) {
     val context = LocalContext.current
     TextButton(
         onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) },
         modifier = Modifier.padding(horizontal = 8.dp)
     ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
         Column {
             Text(name, style = MaterialTheme.typography.bodySmall)
             Text(license, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
