@@ -6,8 +6,8 @@ import androidx.compose.ui.graphics.Color
 // Generada siguiendo las reglas tonales de Material 3 (tono 80 para dark, 40 para light).
 
 // Primario — verde (#60A589 como semilla)
-val Green80 = Color(0xFF7DD5AB)   // tono 80: claro, para dark mode
-val Green40 = Color(0xFF1D6B51)   // tono 40: oscuro, para light mode
+val Green80 = Color(0xFF60A589)   // tono 80: claro, para dark mode
+val Green40 = Color(0xFF60A589)   // tono 40: oscuro, para light mode
 
 // Secundario — verde apagado
 val GreenGrey80 = Color(0xFFB2CCBE)
