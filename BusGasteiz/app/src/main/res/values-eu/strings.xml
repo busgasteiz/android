@@ -22,6 +22,7 @@
     <string name="next_scheduled">Hurrengo zerbitzu programatuak</string>
     <string name="scheduled">Programatua</string>
     <string name="close">Itxi</string>
+    <string name="back">Atzera</string>
 
     <!-- Favorites -->
     <string name="no_favorites">Gogoko ez dago</string>

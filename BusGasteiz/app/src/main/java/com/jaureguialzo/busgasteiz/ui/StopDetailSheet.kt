@@ -63,7 +63,8 @@ fun StopDetailContent(
     dataRepository: DataRepository,
     favoritesRepository: FavoritesRepository,
     navController: NavController,
-    onClose: (() -> Unit)? = null
+    onClose: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
     val version by dataRepository.version.collectAsState()
     val favoriteStopIds by favoritesRepository.favoriteStopIds.collectAsState()
@@ -106,9 +107,9 @@ fun StopDetailContent(
 
     val stopAlerts = dataRepository.serviceAlerts.value.stopAlerts[stop.id] ?: emptyList()
 
-    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-        // Header con nombre, distancia y botón favorito
-        item {
+    LazyColumn(modifier = modifier.fillMaxWidth()) {
+        // Header con nombre, distancia y botón favorito (solo en bottom sheet)
+        if (onClose != null) item {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

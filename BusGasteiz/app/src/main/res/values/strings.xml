@@ -22,6 +22,7 @@
     <string name="next_scheduled">Next scheduled services</string>
     <string name="scheduled">Scheduled</string>
     <string name="close">Close</string>
+    <string name="back">Back</string>
 
     <!-- Favorites -->
     <string name="no_favorites">No Favorites</string>

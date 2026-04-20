@@ -22,6 +22,7 @@
     <string name="next_scheduled">Próximos servicios programados</string>
     <string name="scheduled">Programado</string>
     <string name="close">Cerrar</string>
+    <string name="back">Atrás</string>
 
     <!-- Favorites -->
     <string name="no_favorites">Sin favoritos</string>
