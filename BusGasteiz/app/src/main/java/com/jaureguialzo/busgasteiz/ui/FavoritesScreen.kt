@@ -28,8 +28,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -59,6 +63,13 @@ fun FavoritesScreen(
     val location by locationRepository.location.collectAsState()
     val activeStopIds by dataRepository.activeStopIds.collectAsState()
     val alerts by dataRepository.serviceAlerts.collectAsState()
+
+    // Estado local de pull-to-refresh: solo activo cuando el usuario arrastra,
+    // no cuando el refresco se dispara desde el botón de la toolbar.
+    var isPullRefreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(isRefreshing) {
+        if (!isRefreshing) isPullRefreshing = false
+    }
 
     Scaffold(
         topBar = {
@@ -144,8 +155,11 @@ fun FavoritesScreen(
                     }
 
                 PullToRefreshBox(
-                    isRefreshing = isRefreshing,
-                    onRefresh = { dataRepository.forceRefresh() },
+                    isRefreshing = isPullRefreshing,
+                    onRefresh = {
+                        isPullRefreshing = true
+                        dataRepository.forceRefresh()
+                    },
                     modifier = Modifier.padding(padding)
                 ) {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
