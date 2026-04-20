@@ -30,7 +30,7 @@ fun StopIcon(
     hasArrivals: Boolean,
     hasAlert: Boolean = false,
     modifier: Modifier = Modifier,
-    iconSize: Dp = size * 0.40f
+    iconSize: Dp = size * 0.52f
 ) {
     val fillColor = if (hasArrivals) MaterialTheme.colorScheme.primary else Color.Gray
 
