@@ -71,6 +71,7 @@ fun MapScreen(
     val version by dataRepository.version.collectAsState()
     val locationVersion by locationRepository.locationVersion.collectAsState()
     val location by locationRepository.location.collectAsState()
+    val activePosition by locationRepository.activePosition.collectAsState()
     val isRefreshing by dataRepository.isRefreshing.collectAsState()
     val searchRadius by appSettings.searchRadiusFlow.collectAsState(initial = 200f)
 
@@ -83,18 +84,17 @@ fun MapScreen(
     var showStopSheet by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
-    // Centro predeterminado: Vitoria-Gasteiz
-    val defaultLatLng = LatLng(42.846718, -2.671622)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(defaultLatLng, 15f)
+        val initialPos = locationRepository.activePosition.value
+        position = CameraPosition.fromLatLngZoom(LatLng(initialPos.latitude, initialPos.longitude), 15f)
     }
 
     fun recompute() {
         val gtfs = dataRepository.gtfsData.value ?: return
         val proj = cameraPositionState.projection ?: return
         val bounds = proj.visibleRegion.latLngBounds
-        val refLat = location?.latitude ?: defaultLatLng.latitude
-        val refLon = location?.longitude ?: defaultLatLng.longitude
+        val refLat = location?.latitude ?: LocationRepository.VITORIA_LAT
+        val refLon = location?.longitude ?: LocationRepository.VITORIA_LON
         val activeIds = dataRepository.activeStopIds.value
         val alerts = dataRepository.serviceAlerts.value
         recomputeJob?.cancel()
@@ -119,6 +119,29 @@ fun MapScreen(
 
     // Recompute cuando cambien los datos
     LaunchedEffect(version) { recompute() }
+
+    // Actualiza la posición activa cuando el usuario desplaza el mapa manualmente
+    LaunchedEffect(cameraPositionState.isMoving) {
+        if (!cameraPositionState.isMoving) {
+            val target = cameraPositionState.position.target
+            locationRepository.setActivePositionToMapCenter(target.latitude, target.longitude)
+            recompute()
+        }
+    }
+
+    // Centra el mapa cuando se resuelve la posición (inicio o botón de localización)
+    var isFirstLocationVersion by remember { mutableStateOf(true) }
+    LaunchedEffect(locationVersion) {
+        if (isFirstLocationVersion) {
+            isFirstLocationVersion = false
+            return@LaunchedEffect
+        }
+        val pos = locationRepository.activePosition.value
+        cameraPositionState.animate(
+            CameraUpdateFactory.newLatLngZoom(LatLng(pos.latitude, pos.longitude), cameraPositionState.position.zoom)
+        )
+        recompute()
+    }
 
     Scaffold(
         topBar = {
@@ -159,13 +182,7 @@ fun MapScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                val lat = location?.latitude ?: defaultLatLng.latitude
-                val lon = location?.longitude ?: defaultLatLng.longitude
-                scope.launch {
-                    cameraPositionState.animate(
-                        CameraUpdateFactory.newLatLngZoom(LatLng(lat, lon), 15f)
-                    )
-                }
+                locationRepository.resolveActivePosition()
             }) {
                 Icon(Icons.Default.MyLocation, contentDescription = stringResource(R.string.my_location))
             }

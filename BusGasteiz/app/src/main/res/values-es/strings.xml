@@ -60,4 +60,7 @@
     <string name="live">En directo</string>
     <string name="now">Ahora</string>
     <string name="no_more_arrivals">No hay más llegadas de la línea %s en los próximos 60 minutos.</string>
+    <!-- Mensajes de toast de localización -->
+    <string name="location_unavailable_toast">Localización no disponible. Usando el centro de Vitoria-Gasteiz.</string>
+    <string name="outside_area_toast">Estás fuera del área de Vitoria-Gasteiz. Usando el centro de la ciudad.</string>
 </resources>

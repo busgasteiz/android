@@ -60,4 +60,7 @@
     <string name="live">Live</string>
     <string name="now">Now</string>
     <string name="no_more_arrivals">No more arrivals of line %s in the next 60 minutes.</string>
+    <!-- Location toast messages -->
+    <string name="location_unavailable_toast">Location unavailable. Using Vitoria-Gasteiz city center.</string>
+    <string name="outside_area_toast">Outside Vitoria-Gasteiz area. Using city center.</string>
 </resources>

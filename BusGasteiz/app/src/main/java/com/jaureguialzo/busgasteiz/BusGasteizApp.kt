@@ -1,5 +1,6 @@
 package com.jaureguialzo.busgasteiz
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -9,12 +10,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -42,6 +45,15 @@ fun BusGasteizApp(
     favoritesRepository: FavoritesRepository,
     appSettings: AppSettings
 ) {
+    val context = LocalContext.current
+    val positionToastMessage by locationRepository.positionToastMessage.collectAsState()
+
+    LaunchedEffect(positionToastMessage) {
+        val msg = positionToastMessage ?: return@LaunchedEffect
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+        locationRepository.clearToastMessage()
+    }
+
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.STOPS) }
     val stopsNavController = rememberNavController()
     val favoritesNavController = rememberNavController()

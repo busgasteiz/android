@@ -24,7 +24,11 @@ class MainActivity : ComponentActivity() {
     ) { permissions ->
         val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        if (granted) locationRepository.startUpdates()
+        if (granted) {
+            locationRepository.startUpdates()
+        } else {
+            locationRepository.resolveActivePosition()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

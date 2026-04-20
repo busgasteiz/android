@@ -60,4 +60,7 @@
     <string name="live">Zuzenean</string>
     <string name="now">Orain</string>
     <string name="no_more_arrivals">%s lineak ez du gehiago iritsierarik hurrengo 60 minututan.</string>
+    <!-- Kokapenaren toast mezuak -->
+    <string name="location_unavailable_toast">Kokapena ez dago eskuragarri. Vitoria-Gasteizko erdgunea erabiltzen da.</string>
+    <string name="outside_area_toast">Vitoria-Gasteizko eremutik kanpo zaude. Hiriguneko erdgunea erabiltzen da.</string>
 </resources>

@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -77,6 +78,7 @@ fun NearbyStopsScreen(
     val version by dataRepository.version.collectAsState()
     val locationVersion by locationRepository.locationVersion.collectAsState()
     val location by locationRepository.location.collectAsState()
+    val activePosition by locationRepository.activePosition.collectAsState()
     val searchRadius by appSettings.searchRadiusFlow.collectAsState(initial = 200f)
     val isRefreshing by dataRepository.isRefreshing.collectAsState()
     val favoriteStopIds by favoritesRepository.favoriteStopIds.collectAsState()
@@ -88,8 +90,8 @@ fun NearbyStopsScreen(
 
     fun recompute() {
         val gtfs = dataRepository.gtfsData.value ?: return
-        val lat = location?.latitude ?: 42.846718
-        val lon = location?.longitude ?: -2.671622
+        val lat = activePosition.latitude
+        val lon = activePosition.longitude
         val activeIds = dataRepository.activeStopIds.value
         val alerts = dataRepository.serviceAlerts.value
         recomputeJob?.cancel()
@@ -110,6 +112,10 @@ fun NearbyStopsScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.nearby_stops)) },
                 actions = {
+                    // Botón de localización
+                    IconButton(onClick = { locationRepository.resolveActivePosition() }) {
+                        Icon(Icons.Default.MyLocation, contentDescription = stringResource(R.string.my_location))
+                    }
                     // Botón About
                     IconButton(onClick = onAboutClick) {
                         Icon(Icons.Default.Info, contentDescription = stringResource(R.string.about))
