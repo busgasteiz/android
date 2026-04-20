@@ -14,6 +14,7 @@
     <string name="retry">Retry</string>
     <string name="refresh">Refresh</string>
     <string name="about">About</string>
+    <string name="about_app">About BusGasteiz</string>
     <string name="my_location">My location</string>
 
     <!-- Stop Detail -->

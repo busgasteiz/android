@@ -116,10 +116,6 @@ fun NearbyStopsScreen(
                     IconButton(onClick = { locationRepository.resolveActivePosition() }) {
                         Icon(Icons.Default.MyLocation, contentDescription = stringResource(R.string.my_location))
                     }
-                    // Botón About
-                    IconButton(onClick = onAboutClick) {
-                        Icon(Icons.Default.Info, contentDescription = stringResource(R.string.about))
-                    }
                     // Menú de radio de búsqueda
                     Box {
                         TextButton(onClick = { showRadiusMenu = true }) {
@@ -227,6 +223,29 @@ fun NearbyStopsScreen(
                                             .fillMaxWidth()
                                             .padding(16.dp),
                                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                }
+                            }
+                            // Botón About al pie de la lista
+                            item {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onAboutClick() }
+                                        .padding(vertical = 16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = stringResource(R.string.about_app),
+                                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = stringResource(R.string.about_app),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                                     )
                                 }
                             }
