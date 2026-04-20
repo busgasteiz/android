@@ -241,14 +241,26 @@ Pulsar un destino ya seleccionado resetea su pila de navegación al nivel raíz 
 
 ### `MapScreen`
 
-- Mapa `GoogleMap` con marcadores de paradas mediante `MarkerComposable`.
+- Mapa `GoogleMap` con marcadores de paradas mediante **`MarkerComposable`** (maps-compose).
+  - Los marcadores renderizan el composable `StopIcon` (mismo aspecto que la lista de paradas).
+  - Tamaño de marcador: `size=27.dp`, `iconSize=14.dp` (25 % más pequeño que en lista).
+  - `anchor = Offset(0.5f, 0.5f)` para que el icono circular quede centrado sobre la coordenada.
 - Se actualiza al mover el mapa (idle callback de `CameraPositionState`).
-- Menú de radio de búsqueda (100–2000 m); botón de recentrado en la posición del usuario.
+- **Radio y zoom sincronizados**: `radiusToZoom(radius, lat)` convierte el radio en metros a nivel
+  de zoom de Google Maps (`log2(156543·cos(lat)·360 / (radius·1.5))`). Un `LaunchedEffect(searchRadius)`
+  anima la cámara al zoom correspondiente cuando cambia el radio en el selector.
+- **Zoom inicial**: se lee el radio almacenado con `runBlocking { appSettings.searchRadiusFlow.first() }`
+  dentro de `rememberCameraPositionState` para iniciar el mapa con el zoom correcto. Valor por defecto: 200 m (~zoom 17).
+- Toolbar con **icono `NearMe`** para relocalizar y botón de refresco con animación de spinner
+  (mínimo 1 segundo). Idéntica a la toolbar de `NearbyStopsScreen`.
+- Menú de radio de búsqueda (100–2000 m) integrado en la toolbar del mapa.
 - Al pulsar un marcador abre `StopDetailSheet` como `ModalBottomSheet`.
 
 ### `StopDetailSheet`
 
 - `ModalBottomSheet` con llegadas en los próximos 60 min.
+- Aplica `WindowInsets.statusBars` como padding superior para no solaparse con la barra de estado
+  ni con la cámara perforada del dispositivo.
 - Muestra alertas de servicio al principio de la lista si las hay.
 - Si no hay llegadas, muestra estado vacío + sección **"Next scheduled services"**.
 - Etiqueta de tiempo: `Xm` si ≤ 60 min, `Xh Ym` si > 60 min.
@@ -261,13 +273,24 @@ Pulsar un destino ya seleccionado resetea su pila de navegación al nivel raíz 
 - Muestra paradas favoritas y líneas favoritas por parada.
 - Estado vacío con instrucciones si no hay favoritos.
 - Botón de recarga manual en la `TopAppBar` (`Icons.Default.Refresh`).
+- **`isPullRefreshing` pattern**: la animación pull-to-refresh se controla con un estado local
+  `isPullRefreshing` que solo se activa al arrastrar manualmente. Se limpia cuando
+  `dataRepository.isRefreshing` vuelve a `false`. Evita que el spinner aparezca duplicado
+  cuando se refresca desde otro origen (ej. refresco automático de 10 min).
 
 ### `AboutScreen`
 
 - `Scaffold` con `TopAppBar` y botón de cierre o navegación atrás.
 - Secciones: copyright, términos de uso, política de privacidad, licencia Apache 2.0,
-  fuentes de datos (con licencia CC BY), enlace a GitHub.
-- En builds `DEBUG`: toggle para simular alertas de servicio.
+  fuentes de datos (con licencia CC BY), enlace a GitHub, paletas de color.
+- **Iconos en todas las secciones**, equivalentes a los de iOS:
+  - App License: `Icons.Default.Description`
+  - TUVISA bus lines: `Icons.Default.DirectionsBus`
+  - TUVISA real-time data: `Icons.Default.Sensors`
+  - Open Data Euskadi (tranvía): `Icons.Default.Tram`
+  - Color Palettes: `Icons.Default.Palette`
+  - GitHub: `Icons.Default.Code`
+- En builds `DEBUG`: toggle para simular alertas, con icono `Icons.Default.Warning` en rojo.
 
 ---
 
@@ -277,9 +300,12 @@ Pulsar un destino ya seleccionado resetea su pila de navegación al nivel raíz 
 
 Equivalente de `StopIconView` de iOS:
 - Círculo relleno con color primario (`MaterialTheme.colorScheme.primary`) o gris si sin llegadas.
-- Icono `Icons.Default.DirectionsBus` / icono de tranvía en blanco.
+- Icono `Icons.Default.DirectionsBus` / `Icons.Default.Tram` en blanco.
 - Borde blanco y sombra sutil.
-- Parámetros: `size`, `isTram`, `hasArrivals`.
+- Parámetros: `size` (por defecto 36 dp), `iconSize` (por defecto `size * 0.52f`; en la lista de
+  paradas queda un 30 % más grande que la versión original), `isTram`, `hasArrivals`.
+- Los marcadores del mapa usan `size=27.dp, iconSize=14.dp` explícitos (marcador 25 % más pequeño
+  que en la lista; el icono interior mantiene su tamaño relativo original).
 
 ### `RouteBadge`
 
@@ -365,9 +391,29 @@ Acceder desde Compose a través de `AppSettings.searchRadiusFlow.collectAsState(
 - Iconos de parada: circulares, equivalentes a 48 dp, color primario del tema o gris.
 - Badges de línea: esquinas redondeadas, color de la línea, texto blanco o negro según luminancia.
 - Mapa en estilo estándar de Google Maps (igual que el estilo `.standard` de MapKit).
+- Los marcadores del mapa son composables `StopIcon` renderizados con `MarkerComposable`
+  (mismo aspecto visual que en la lista de paradas).
 - Marcadores seleccionados se amplían visualmente para indicar selección.
 - Soportar modo claro y oscuro mediante `BusGasteizTheme` con `dynamicColor = true` donde sea posible.
 - Edge-to-edge habilitado (`enableEdgeToEdge()`) con `WindowInsets` gestionados por Scaffold.
+- **Color de acento**: verde `#60A589` (equivalente al `AccentColor` de iOS). Es el color primario
+  del tema cuando el dispositivo no soporta Dynamic Color o lo tiene desactivado.
+
+---
+
+## Iconos de la aplicación
+
+El icono se genera con el script `utils/gen_icon_android.py`:
+
+- **Fondo adaptativo** (`drawable/ic_launcher_background.xml`): vector sólido `#60A589`.
+- **Foreground adaptativo** (`drawable-v24/ic_launcher_foreground.xml`): vector del icono de
+  autobús (`directions_bus`) centrado en la zona segura de 72 dp.
+- **PNGs de densidad** (`mipmap-mdpi` → `mipmap-xxxhdpi`): generados con `rsvg-convert` a
+  48, 72, 96, 144 y 192 px. Hay versión cuadrada (`ic_launcher.png`) y circular
+  (`ic_launcher_round.png`; recortada con `clipPath` en el SVG, no en el `<g transform>`
+  para que `librsvg` evalúe correctamente las coordenadas del clip).
+- El script también genera el icono de **512×512 px para Google Play Store** en
+  `busgasteiz/temp/ic_play_store_512.png` (autobús 25 % más grande que en los iconos de app).
 
 ---
 
