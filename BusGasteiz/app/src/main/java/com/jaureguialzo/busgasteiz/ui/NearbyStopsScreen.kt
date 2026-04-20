@@ -88,6 +88,11 @@ fun NearbyStopsScreen(
     var recomputeJob by remember { mutableStateOf<Job?>(null) }
     var showRadiusMenu by remember { mutableStateOf(false) }
     var isResolvingLocation by remember { mutableStateOf(false) }
+    // Estado separado para el indicador de PullToRefresh: solo true cuando el usuario
+    // hace el gesto de tirón, no cuando el refresco se inicia desde el botón de la toolbar.
+    var isPullRefreshing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isRefreshing) { if (!isRefreshing) isPullRefreshing = false }
 
     fun recompute() {
         val gtfs = dataRepository.gtfsData.value ?: return
@@ -204,8 +209,11 @@ fun NearbyStopsScreen(
                     }
                 } else {
                     PullToRefreshBox(
-                        isRefreshing = isRefreshing,
-                        onRefresh = { dataRepository.forceRefresh() },
+                        isRefreshing = isPullRefreshing,
+                        onRefresh = {
+                            isPullRefreshing = true
+                            dataRepository.forceRefresh()
+                        },
                         modifier = Modifier.padding(padding)
                     ) {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
