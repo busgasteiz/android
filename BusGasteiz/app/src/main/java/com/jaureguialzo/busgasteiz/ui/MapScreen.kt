@@ -224,10 +224,11 @@ fun MapScreen(
                         }
                     ) {
                         StopIcon(
-                            size = 36.dp,
+                            size = 27.dp,
                             isTram = nearby.stop.isTram,
                             hasArrivals = nearby.hasArrivals,
-                            hasAlert = nearby.hasAlert
+                            hasAlert = nearby.hasAlert,
+                            iconSize = 14.dp
                         )
                     }
                 }

@@ -29,7 +29,8 @@ fun StopIcon(
     isTram: Boolean,
     hasArrivals: Boolean,
     hasAlert: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconSize: Dp = size * 0.40f
 ) {
     val fillColor = if (hasArrivals) MaterialTheme.colorScheme.primary else Color.Gray
 
@@ -55,7 +56,7 @@ fun StopIcon(
                     imageVector = if (isTram) Icons.Default.Tram else Icons.Default.DirectionsBus,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(size * 0.40f)
+                    modifier = Modifier.size(iconSize)
                 )
             }
         }
