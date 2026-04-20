@@ -102,8 +102,15 @@ class FavoritesRepository {
 
     val parsedRouteKeys: List<ParsedRouteKey>
         get() = _favoriteRouteKeys.value.mapNotNull { key ->
-            val parts = key.split("::")
-            if (parts.size != 2) return@mapNotNull null
-            ParsedRouteKey(stopId = parts[0], routeShortName = parts[1])
+            // Split on the LAST "::" to correctly handle stop IDs that contain ":" (e.g. Euskotren
+            // StopPlace IDs like "ES:Euskotren:StopPlace:1559:" have a trailing colon, which
+            // combined with the "::" separator produces ":::". Using the last "::" gives the
+            // correct stopId including the trailing colon.
+            val idx = key.lastIndexOf("::")
+            if (idx < 0) return@mapNotNull null
+            val stopId = key.substring(0, idx)
+            val routeShortName = key.substring(idx + 2)
+            if (stopId.isEmpty() || routeShortName.isEmpty()) return@mapNotNull null
+            ParsedRouteKey(stopId = stopId, routeShortName = routeShortName)
         }.sortedBy { it.id }
 }
