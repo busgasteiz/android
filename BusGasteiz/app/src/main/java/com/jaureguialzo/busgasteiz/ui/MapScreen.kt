@@ -58,7 +58,9 @@ import kotlin.math.log2
 import kotlin.math.PI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 // Convierte un radio en metros al nivel de zoom de Google Maps adecuado para visualizarlo
@@ -97,7 +99,12 @@ fun MapScreen(
 
     val cameraPositionState = rememberCameraPositionState {
         val initialPos = locationRepository.activePosition.value
-        position = CameraPosition.fromLatLngZoom(LatLng(initialPos.latitude, initialPos.longitude), 15f)
+        // Lee el radio almacenado para calcular el zoom inicial correcto.
+        // runBlocking es intencionado: DataStore entrega el valor de forma síncrona
+        // desde caché (o casi instantáneamente si aún no se ha leído).
+        val storedRadius = runBlocking { appSettings.searchRadiusFlow.first() }
+        val initialZoom = radiusToZoom(storedRadius, initialPos.latitude)
+        position = CameraPosition.fromLatLngZoom(LatLng(initialPos.latitude, initialPos.longitude), initialZoom)
     }
 
     fun recompute() {
