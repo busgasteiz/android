@@ -8,7 +8,8 @@
 
     <!-- Nearby Stops -->
     <string name="nearby_stops">Inguruko geltokiak</string>
-    <string name="no_nearby_stops">Ez dago geltokiik %d m-ko erradioaren barruan.\nHanditu bilaketa-erradioa.</string>
+    <string name="no_nearby_stops_prefix">Ez dago geltokiik %d m-ko erradioaren barruan.</string>
+    <string name="increase_search_radius">Handitu bilaketa-erradioa</string>
     <string name="updated_at">Eguneratuta: %s</string>
     <string name="error_loading">Errorea datuak kargatzean</string>
     <string name="retry">Berriro saiatu</string>

@@ -200,12 +200,23 @@ fun NearbyStopsScreen(
 
             is DataRepository.LoadState.Ready -> {
                 if (nearbyStops.isEmpty()) {
+                    val radiusOptions = listOf(100f, 200f, 300f, 500f, 1000f)
+                    val nextRadius = radiusOptions.firstOrNull { it > searchRadius }
                     Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                        Text(
-                            stringResource(R.string.no_nearby_stops, searchRadius.toInt()),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                stringResource(R.string.no_nearby_stops_prefix, searchRadius.toInt()),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                            if (nextRadius != null) {
+                                TextButton(onClick = {
+                                    scope.launch { appSettings.setSearchRadius(nextRadius) }
+                                }) {
+                                    Text(stringResource(R.string.increase_search_radius))
+                                }
+                            }
+                        }
                     }
                 } else {
                     PullToRefreshBox(

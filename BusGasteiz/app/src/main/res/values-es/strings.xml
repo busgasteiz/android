@@ -8,7 +8,8 @@
 
     <!-- Nearby Stops -->
     <string name="nearby_stops">Paradas cercanas</string>
-    <string name="no_nearby_stops">No hay paradas en %d m.\nAumenta el radio de búsqueda.</string>
+    <string name="no_nearby_stops_prefix">No hay paradas en %d m.</string>
+    <string name="increase_search_radius">Aumenta el radio de búsqueda</string>
     <string name="updated_at">Actualizado: %s</string>
     <string name="error_loading">Error al cargar los datos</string>
     <string name="retry">Reintentar</string>
