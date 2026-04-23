@@ -79,13 +79,14 @@ fun NearbyStopsScreen(
     val locationVersion by locationRepository.locationVersion.collectAsState()
     val location by locationRepository.location.collectAsState()
     val activePosition by locationRepository.activePosition.collectAsState()
-    val searchRadius by appSettings.searchRadiusFlow.collectAsState(initial = 200f)
+    val searchRadius by appSettings.searchRadiusFlow.collectAsState()
     val isRefreshing by dataRepository.isRefreshing.collectAsState()
     val favoriteStopIds by favoritesRepository.favoriteStopIds.collectAsState()
 
     val nearbyStops = remember { mutableStateListOf<NearbyStop>() }
     val scope = rememberCoroutineScope()
     var recomputeJob by remember { mutableStateOf<Job?>(null) }
+    var hasComputed by remember { mutableStateOf(false) }
     var showRadiusMenu by remember { mutableStateOf(false) }
     var isResolvingLocation by remember { mutableStateOf(false) }
     // Estado separado para el indicador de PullToRefresh: solo true cuando el usuario
@@ -107,6 +108,7 @@ fun NearbyStopsScreen(
             }
             nearbyStops.clear()
             nearbyStops.addAll(stops)
+            hasComputed = true
         }
     }
 
@@ -199,7 +201,7 @@ fun NearbyStopsScreen(
             }
 
             is DataRepository.LoadState.Ready -> {
-                if (nearbyStops.isEmpty()) {
+                if (hasComputed && nearbyStops.isEmpty()) {
                     val radiusOptions = listOf(100f, 200f, 300f, 500f, 1000f)
                     val nextRadius = radiusOptions.firstOrNull { it > searchRadius }
                     Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {

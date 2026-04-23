@@ -90,7 +90,7 @@ fun MapScreen(
     val activePosition by locationRepository.activePosition.collectAsState()
     val loadState by dataRepository.loadState.collectAsState()
     val isRefreshing by dataRepository.isRefreshing.collectAsState()
-    val searchRadius by appSettings.searchRadiusFlow.collectAsState(initial = 200f)
+    val searchRadius by appSettings.searchRadiusFlow.collectAsState()
 
     val mapStops = remember { mutableStateListOf<NearbyStop>() }
     val scope = rememberCoroutineScope()
