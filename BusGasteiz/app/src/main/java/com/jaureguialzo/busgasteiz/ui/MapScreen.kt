@@ -211,7 +211,7 @@ fun MapScreen(
                             expanded = showRadiusMenu,
                             onDismissRequest = { showRadiusMenu = false }
                         ) {
-                            listOf(100f, 200f, 500f, 1000f, 2000f).forEach { r ->
+                            listOf(100f, 200f, 300f, 500f, 1000f).forEach { r ->
                                 DropdownMenuItem(
                                     text = { Text("${r.toInt()} m") },
                                     onClick = {
