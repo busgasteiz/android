@@ -15,7 +15,7 @@ android/BusGasteiz/
 │   └── src/main/
 │       ├── AndroidManifest.xml
 │       └── java/com/jaureguialzo/busgasteiz/
-│           ├── MainActivity.kt             # Entry point; aplica BusGasteizTheme y lanza BusGasteizApp
+│           ├── MainActivity.kt             # Entry point; aplica BusGasteizTheme y lanza BusGasteizApp; refresco al volver de background
 │           ├── BusGasteizApp.kt            # NavigationSuiteScaffold raíz (3 destinos)
 │           ├── AppDestinations.kt          # Enum de destinos de navegación principal (Stops/Map/Favorites)
 │           ├── NavDestination.kt           # Sealed class para navegación push tipada entre pantallas
@@ -143,11 +143,15 @@ DataRepository (singleton ViewModel, viewModelScope + Dispatchers.IO)
     ├── activeStopIds: StateFlow<Set<String>>   ← precomputado tras cada carga
     ├── loadState: StateFlow<LoadState>
     ├── version: StateFlow<Int>                 ← se incrementa con cada recarga
-    └── isRefreshing: StateFlow<Boolean>
+    ├── isRefreshing: StateFlow<Boolean>
+    └── needsRefresh: Boolean                   ← true cuando han pasado ≥10 min desde la última carga
 ```
 
 Los datos estáticos (GTFS ZIP) se refrescan cada **10 minutos**. El feed RT y las alertas se
-descargan en cada refresco. `forceRefresh()` fuerza una recarga inmediata.
+descargan en cada refresco. `forceRefresh()` fuerza una recarga inmediata. Incluye un guard
+`if (_isRefreshing.value) return` para evitar ejecuciones concurrentes.
+
+**Refresco automático al volver de segundo plano o cambiar de pestaña**: si `gtfsData.value != null && needsRefresh`, se llama a `forceRefresh()` (con animación de spinner). Si no hay datos, `refreshIfNeeded()` gestiona la carga inicial.
 
 ### Fusión de datos de tranvía
 
@@ -229,6 +233,8 @@ navigation rail (tablet en vertical) y navigation drawer (tablet en horizontal).
 
 Pulsar un destino ya seleccionado resetea su pila de navegación al nivel raíz (misma lógica que iOS).
 
+`LaunchedEffect(currentDestination)` dispara `forceRefresh()` (con animación) si `gtfsData.value != null && needsRefresh` al cambiar de pestaña.
+
 ### `NearbyStopsScreen`
 
 - Muestra el estado de carga de `DataRepository` (`Idle`, `Loading`, `Failed`, `Ready`).
@@ -238,6 +244,7 @@ Pulsar un destino ya seleccionado resetea su pila de navegación al nivel raíz 
 - Indicador de alerta si `NearbyStop.hasAlert`.
 - Navega a `StopDetailSheet` al pulsar una parada.
 - Botón "About" en la `TopAppBar` que abre `AboutScreen`.
+- Si no hay paradas en el radio actual, muestra un mensaje con un enlace tappable **"Increase search radius to Xm"** que salta al siguiente radio disponible en `[100, 200, 300, 500, 1000]`.
 
 ### `MapScreen`
 
@@ -253,8 +260,9 @@ Pulsar un destino ya seleccionado resetea su pila de navegación al nivel raíz 
   dentro de `rememberCameraPositionState` para iniciar el mapa con el zoom correcto. Valor por defecto: 200 m (~zoom 17).
 - Toolbar con **icono `NearMe`** para relocalizar y botón de refresco con animación de spinner
   (mínimo 1 segundo). Idéntica a la toolbar de `NearbyStopsScreen`.
-- Menú de radio de búsqueda (100–2000 m) integrado en la toolbar del mapa.
+- Menú de radio de búsqueda (**100–1000 m**, mismas opciones que `NearbyStopsScreen`: 100, 200, 300, 500, 1000) integrado en la toolbar del mapa.
 - Al pulsar un marcador abre `StopDetailSheet` como `ModalBottomSheet`.
+- Overlay con `CircularProgressIndicator` o mensaje de error según `DataRepository.loadState`, para garantizar que la pantalla nunca queda en blanco.
 
 ### `StopDetailSheet`
 
@@ -273,6 +281,7 @@ Pulsar un destino ya seleccionado resetea su pila de navegación al nivel raíz 
 - Muestra paradas favoritas y líneas favoritas por parada.
 - Estado vacío con instrucciones si no hay favoritos.
 - Botón de recarga manual en la `TopAppBar` (`Icons.Default.Refresh`).
+- Muestra `CircularProgressIndicator` mientras carga y un mensaje de error si `loadState == Failed`, para garantizar que la pantalla nunca queda en blanco.
 - **`isPullRefreshing` pattern**: la animación pull-to-refresh se controla con un estado local
   `isPullRefreshing` que solo se activa al arrastrar manualmente. Se limpia cuando
   `dataRepository.isRefreshing` vuelve a `false`. Evita que el spinner aparezca duplicado
