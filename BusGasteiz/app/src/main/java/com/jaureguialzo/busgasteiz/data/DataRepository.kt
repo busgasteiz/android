@@ -93,6 +93,7 @@ class DataRepository(private val appContext: Context) : ViewModel() {
     }
 
     fun forceRefresh() {
+        if (_isRefreshing.value) return
         viewModelScope.launch {
             _isRefreshing.value = true
             val minDelay = launch { delay(1000L) }

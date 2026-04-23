@@ -69,6 +69,13 @@ fun BusGasteizApp(
     }
 
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.STOPS) }
+
+    LaunchedEffect(currentDestination) {
+        if (dataRepository.needsRefresh && dataRepository.gtfsData.value != null) {
+            dataRepository.forceRefresh()
+        }
+    }
+
     val stopsNavController = rememberNavController()
     val favoritesNavController = rememberNavController()
 

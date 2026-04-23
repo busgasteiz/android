@@ -99,6 +99,10 @@ class MainActivity : ComponentActivity() {
         if (fineGranted || coarseGranted) {
             locationRepository.startUpdates()
         }
-        dataRepository.refreshIfNeeded()
+        if (dataRepository.needsRefresh && dataRepository.gtfsData.value != null) {
+            dataRepository.forceRefresh()
+        } else {
+            dataRepository.refreshIfNeeded()
+        }
     }
 }
