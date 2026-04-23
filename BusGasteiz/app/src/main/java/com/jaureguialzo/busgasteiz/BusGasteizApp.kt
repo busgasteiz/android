@@ -1,13 +1,23 @@
 package com.jaureguialzo.busgasteiz
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,9 +26,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -157,15 +169,20 @@ private fun StopsNavGraph(
         ) { backStackEntry ->
             val stopId = backStackEntry.arguments?.getString("stopId") ?: return@composable
             val distance = backStackEntry.arguments?.getFloat("distance")?.toDouble() ?: 0.0
-            val gtfs = dataRepository.gtfsData.collectAsState().value ?: return@composable
-            val stop = gtfs.stops[stopId] ?: return@composable
-            StopDetailScreen(
-                stop = stop,
-                distance = distance,
-                dataRepository = dataRepository,
-                favoritesRepository = favoritesRepository,
-                navController = navController
-            )
+            val loadState by dataRepository.loadState.collectAsState()
+            val gtfs by dataRepository.gtfsData.collectAsState()
+            val stop = gtfs?.stops?.get(stopId)
+            when {
+                stop != null -> StopDetailScreen(
+                    stop = stop,
+                    distance = distance,
+                    dataRepository = dataRepository,
+                    favoritesRepository = favoritesRepository,
+                    navController = navController
+                )
+                gtfs != null -> LaunchedEffect(Unit) { navController.popBackStack() }
+                else -> DataLoadingScreen(loadState, onRetry = { dataRepository.forceRefresh() }, onBack = { navController.popBackStack() })
+            }
         }
         composable(
             route = "route_arrivals/{stopId}/{distance}/{routeShortName}/{routeColor}",
@@ -180,17 +197,22 @@ private fun StopsNavGraph(
             val distance = backStackEntry.arguments?.getFloat("distance")?.toDouble() ?: 0.0
             val routeShortName = backStackEntry.arguments?.getString("routeShortName") ?: return@composable
             val routeColor = backStackEntry.arguments?.getString("routeColor") ?: ""
-            val gtfs = dataRepository.gtfsData.collectAsState().value ?: return@composable
-            val stop = gtfs.stops[stopId] ?: return@composable
-            RouteArrivalsScreen(
-                stop = stop,
-                distance = distance,
-                routeShortName = routeShortName,
-                routeColor = routeColor,
-                dataRepository = dataRepository,
-                favoritesRepository = favoritesRepository,
-                navController = navController
-            )
+            val loadState by dataRepository.loadState.collectAsState()
+            val gtfs by dataRepository.gtfsData.collectAsState()
+            val stop = gtfs?.stops?.get(stopId)
+            when {
+                stop != null -> RouteArrivalsScreen(
+                    stop = stop,
+                    distance = distance,
+                    routeShortName = routeShortName,
+                    routeColor = routeColor,
+                    dataRepository = dataRepository,
+                    favoritesRepository = favoritesRepository,
+                    navController = navController
+                )
+                gtfs != null -> LaunchedEffect(Unit) { navController.popBackStack() }
+                else -> DataLoadingScreen(loadState, onRetry = { dataRepository.forceRefresh() }, onBack = { navController.popBackStack() })
+            }
         }
         composable("about") {
             AboutScreen(navController = navController, dataRepository = dataRepository)
@@ -229,15 +251,20 @@ private fun FavoritesNavGraph(
         ) { backStackEntry ->
             val stopId = backStackEntry.arguments?.getString("stopId") ?: return@composable
             val distance = backStackEntry.arguments?.getFloat("distance")?.toDouble() ?: 0.0
-            val gtfs = dataRepository.gtfsData.collectAsState().value ?: return@composable
-            val stop = gtfs.stops[stopId] ?: return@composable
-            StopDetailScreen(
-                stop = stop,
-                distance = distance,
-                dataRepository = dataRepository,
-                favoritesRepository = favoritesRepository,
-                navController = navController
-            )
+            val loadState by dataRepository.loadState.collectAsState()
+            val gtfs by dataRepository.gtfsData.collectAsState()
+            val stop = gtfs?.stops?.get(stopId)
+            when {
+                stop != null -> StopDetailScreen(
+                    stop = stop,
+                    distance = distance,
+                    dataRepository = dataRepository,
+                    favoritesRepository = favoritesRepository,
+                    navController = navController
+                )
+                gtfs != null -> LaunchedEffect(Unit) { navController.popBackStack() }
+                else -> DataLoadingScreen(loadState, onRetry = { dataRepository.forceRefresh() }, onBack = { navController.popBackStack() })
+            }
         }
         composable(
             route = "route_arrivals/{stopId}/{distance}/{routeShortName}/{routeColor}",
@@ -252,17 +279,52 @@ private fun FavoritesNavGraph(
             val distance = backStackEntry.arguments?.getFloat("distance")?.toDouble() ?: 0.0
             val routeShortName = backStackEntry.arguments?.getString("routeShortName") ?: return@composable
             val routeColor = backStackEntry.arguments?.getString("routeColor") ?: ""
-            val gtfs = dataRepository.gtfsData.collectAsState().value ?: return@composable
-            val stop = gtfs.stops[stopId] ?: return@composable
-            RouteArrivalsScreen(
-                stop = stop,
-                distance = distance,
-                routeShortName = routeShortName,
-                routeColor = routeColor,
-                dataRepository = dataRepository,
-                favoritesRepository = favoritesRepository,
-                navController = navController
-            )
+            val loadState by dataRepository.loadState.collectAsState()
+            val gtfs by dataRepository.gtfsData.collectAsState()
+            val stop = gtfs?.stops?.get(stopId)
+            when {
+                stop != null -> RouteArrivalsScreen(
+                    stop = stop,
+                    distance = distance,
+                    routeShortName = routeShortName,
+                    routeColor = routeColor,
+                    dataRepository = dataRepository,
+                    favoritesRepository = favoritesRepository,
+                    navController = navController
+                )
+                gtfs != null -> LaunchedEffect(Unit) { navController.popBackStack() }
+                else -> DataLoadingScreen(loadState, onRetry = { dataRepository.forceRefresh() }, onBack = { navController.popBackStack() })
+            }
+        }
+    }
+}
+
+// MARK: - Pantalla de carga/error para destinos de navegación que dependen de gtfsData
+
+@Composable
+private fun DataLoadingScreen(
+    loadState: DataRepository.LoadState,
+    onRetry: () -> Unit,
+    onBack: () -> Unit
+) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        when (loadState) {
+            is DataRepository.LoadState.Failed -> {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    Text(stringResource(R.string.error_loading), style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(8.dp))
+                    Text(loadState.message, style = MaterialTheme.typography.bodySmall)
+                    Spacer(Modifier.height(16.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
+                        TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                    }
+                }
+            }
+            else -> CircularProgressIndicator()
         }
     }
 }

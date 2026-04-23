@@ -1,8 +1,11 @@
 package com.jaureguialzo.busgasteiz.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -30,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
@@ -84,6 +88,7 @@ fun MapScreen(
     val locationVersion by locationRepository.locationVersion.collectAsState()
     val location by locationRepository.location.collectAsState()
     val activePosition by locationRepository.activePosition.collectAsState()
+    val loadState by dataRepository.loadState.collectAsState()
     val isRefreshing by dataRepository.isRefreshing.collectAsState()
     val searchRadius by appSettings.searchRadiusFlow.collectAsState(initial = 200f)
 
@@ -262,6 +267,45 @@ fun MapScreen(
                         )
                     }
                 }
+            }
+
+            // Overlay de carga/error encima del mapa
+            when (val state = loadState) {
+                is DataRepository.LoadState.Idle,
+                is DataRepository.LoadState.Loading -> {
+                    val msg = if (state is DataRepository.LoadState.Loading) state.message
+                              else stringResource(R.string.starting_up)
+                    Box(
+                        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator()
+                            Spacer(Modifier.height(16.dp))
+                            Text(msg, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                        }
+                    }
+                }
+                is DataRepository.LoadState.Failed -> {
+                    Box(
+                        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(32.dp)
+                        ) {
+                            Text(stringResource(R.string.error_loading), style = MaterialTheme.typography.titleMedium)
+                            Spacer(Modifier.height(8.dp))
+                            Text(state.message, style = MaterialTheme.typography.bodySmall)
+                            Spacer(Modifier.height(16.dp))
+                            TextButton(onClick = { dataRepository.forceRefresh() }) {
+                                Text(stringResource(R.string.retry))
+                            }
+                        }
+                    }
+                }
+                is DataRepository.LoadState.Ready -> {}
             }
         }
     }

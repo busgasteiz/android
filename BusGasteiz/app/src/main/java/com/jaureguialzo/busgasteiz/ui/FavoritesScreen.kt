@@ -1,6 +1,7 @@
 package com.jaureguialzo.busgasteiz.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -22,6 +24,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -54,6 +57,7 @@ fun FavoritesScreen(
     navController: NavController
 ) {
     val gtfsData by dataRepository.gtfsData.collectAsState()
+    val loadState by dataRepository.loadState.collectAsState()
     val isRefreshing by dataRepository.isRefreshing.collectAsState()
     val favoriteStopIds by favoritesRepository.favoriteStopIds.collectAsState()
     val favoriteRouteKeys by favoritesRepository.favoriteRouteKeys.collectAsState()
@@ -114,6 +118,20 @@ fun FavoritesScreen(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
+                    }
+                }
+            }
+            gtfs == null && loadState is DataRepository.LoadState.Failed -> {
+                val failedState = loadState as DataRepository.LoadState.Failed
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
+                        Text(stringResource(R.string.error_loading), style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(8.dp))
+                        Text(failedState.message, style = MaterialTheme.typography.bodySmall)
+                        Spacer(Modifier.height(16.dp))
+                        TextButton(onClick = { dataRepository.forceRefresh() }) {
+                            Text(stringResource(R.string.retry))
+                        }
                     }
                 }
             }

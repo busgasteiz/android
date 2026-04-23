@@ -139,18 +139,26 @@ class DataRepository(private val appContext: Context) : ViewModel() {
                 println("[DataRepository] GTFS Euskotren en caché y vigente, omitiendo descarga")
             }
 
-            // Feed RT Tuvisa: siempre actualizar
+            // Feed RT Tuvisa: siempre actualizar (no crítico: un fallo no impide mostrar datos estáticos)
             if (!hasData) _loadState.value = LoadState.Loading(appContext.getString(R.string.loading_downloading_realtime))
-            println("[DataRepository] Descargando feed RT Tuvisa…")
-            val pbData = withContext(Dispatchers.IO) { downloadBytes(TUVISA_RT_URL) }
-            println("[DataRepository] Feed RT Tuvisa: ${pbData.size} bytes")
-            withContext(Dispatchers.IO) { pbFile.writeBytes(pbData) }
+            try {
+                println("[DataRepository] Descargando feed RT Tuvisa…")
+                val pbData = withContext(Dispatchers.IO) { downloadBytes(TUVISA_RT_URL) }
+                println("[DataRepository] Feed RT Tuvisa: ${pbData.size} bytes")
+                withContext(Dispatchers.IO) { pbFile.writeBytes(pbData) }
+            } catch (e: Exception) {
+                println("[DataRepository] Advertencia: feed RT Tuvisa no disponible: $e")
+            }
 
-            // Feed RT Euskotren: siempre actualizar
-            println("[DataRepository] Descargando feed RT Euskotren…")
-            val tramPbData = withContext(Dispatchers.IO) { downloadBytes(EUSKOTREN_RT_URL) }
-            println("[DataRepository] Feed RT Euskotren: ${tramPbData.size} bytes")
-            withContext(Dispatchers.IO) { euskotrenPbFile.writeBytes(tramPbData) }
+            // Feed RT Euskotren: siempre actualizar (no crítico)
+            try {
+                println("[DataRepository] Descargando feed RT Euskotren…")
+                val tramPbData = withContext(Dispatchers.IO) { downloadBytes(EUSKOTREN_RT_URL) }
+                println("[DataRepository] Feed RT Euskotren: ${tramPbData.size} bytes")
+                withContext(Dispatchers.IO) { euskotrenPbFile.writeBytes(tramPbData) }
+            } catch (e: Exception) {
+                println("[DataRepository] Advertencia: feed RT Euskotren no disponible: $e")
+            }
 
             // Alertas Tuvisa: descarga no crítica
             println("[DataRepository] Descargando alertas Tuvisa…")
