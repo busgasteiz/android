@@ -27,6 +27,7 @@ import com.jaureguialzo.busgasteiz.ui.theme.BusGasteizTheme
 class MainActivity : ComponentActivity() {
 
     private lateinit var locationRepository: LocationRepository
+    private lateinit var dataRepository: DataRepository
 
     private val locationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
 
         val dataRepository = DataRepository.getInstance(applicationContext)
+        this.dataRepository = dataRepository
         locationRepository = LocationRepository(this)
         val authRepository = AuthRepository(applicationContext)
         val favoritesRepository = FavoritesRepository(authRepository)
@@ -97,5 +99,6 @@ class MainActivity : ComponentActivity() {
         if (fineGranted || coarseGranted) {
             locationRepository.startUpdates()
         }
+        dataRepository.refreshIfNeeded()
     }
 }
