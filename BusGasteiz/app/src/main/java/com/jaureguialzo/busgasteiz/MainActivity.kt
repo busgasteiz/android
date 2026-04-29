@@ -9,10 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import com.google.firebase.FirebaseApp
-import com.jaureguialzo.busgasteiz.data.AuthRepository
 import com.jaureguialzo.busgasteiz.data.DataRepository
 import com.jaureguialzo.busgasteiz.data.FavoritesRepository
 import com.jaureguialzo.busgasteiz.data.LocationRepository
@@ -44,17 +40,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        FirebaseApp.initializeApp(this)
 
         val dataRepository = DataRepository.getInstance(applicationContext)
         this.dataRepository = dataRepository
         locationRepository = LocationRepository(this)
-        val authRepository = AuthRepository(applicationContext)
-        val favoritesRepository = FavoritesRepository(authRepository)
+        val favoritesRepository = FavoritesRepository(applicationContext)
         val appSettings = AppSettings(this)
-
-        // Intento silencioso de sign-in al arrancar (sin UI, solo cuentas ya autorizadas)
-        lifecycleScope.launch { authRepository.trySilentSignIn(this@MainActivity) }
 
         // Solicitar permisos de localización
         val fineGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PermissionChecker.PERMISSION_GRANTED
@@ -80,7 +71,6 @@ class MainActivity : ComponentActivity() {
                     dataRepository = dataRepository,
                     locationRepository = locationRepository,
                     favoritesRepository = favoritesRepository,
-                    authRepository = authRepository,
                     appSettings = appSettings
                 )
             }

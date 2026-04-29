@@ -1,25 +1,24 @@
 package com.jaureguialzo.busgasteiz.data
 
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import android.content.Context
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringSetPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
-// MARK: - Favoritos sincronizados con Firestore
+// MARK: - Favoritos persistidos localmente con DataStore
 
-class FavoritesRepository(private val authRepository: AuthRepository) {
+private val Context.favoritesDataStore by preferencesDataStore(name = "favorites")
 
-    private val auth = Firebase.auth
-    private val db = Firebase.firestore
+class FavoritesRepository(private val context: Context) {
+
+    private val STOPS_KEY = stringSetPreferencesKey("favorite_stops")
+    private val ROUTES_KEY = stringSetPreferencesKey("favorite_routes")
 
     private val _favoriteStopIds = MutableStateFlow<Set<String>>(emptySet())
     val favoriteStopIds: StateFlow<Set<String>> = _favoriteStopIds
@@ -30,53 +29,12 @@ class FavoritesRepository(private val authRepository: AuthRepository) {
     val isEmpty: Boolean
         get() = _favoriteStopIds.value.isEmpty() && _favoriteRouteKeys.value.isEmpty()
 
-    // Registro del listener activo para cancelarlo antes de reconectar con un UID nuevo.
-    private var listenerRegistration: ListenerRegistration? = null
-
     init {
         CoroutineScope(Dispatchers.IO).launch {
-            ensureSignedIn()
-            attachListener()
+            val prefs = context.favoritesDataStore.data.first()
+            _favoriteStopIds.value = prefs[STOPS_KEY] ?: emptySet()
+            _favoriteRouteKeys.value = prefs[ROUTES_KEY] ?: emptySet()
         }
-        // Cuando el usuario pasa de anónimo a Google (o viceversa), el UID cambia:
-        // eliminamos el listener antiguo y conectamos uno nuevo al documento correcto.
-        CoroutineScope(Dispatchers.IO).launch {
-            authRepository.authState
-                .drop(1)
-                .filterNot { it is AuthState.Loading }
-                .collect { attachListener() }
-        }
-    }
-
-    private suspend fun ensureSignedIn() {
-        if (auth.currentUser == null) {
-            try {
-                auth.signInAnonymously().await()
-            } catch (e: Exception) {
-                println("[FavoritesRepository] Error al iniciar sesión anónima: $e")
-            }
-        }
-    }
-
-    private fun attachListener() {
-        listenerRegistration?.remove()
-        val uid = auth.currentUser?.uid ?: return
-        listenerRegistration = db.collection("users").document(uid)
-            .collection("favorites").document("data")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    println("[FavoritesRepository] Error Firestore: $error")
-                    return@addSnapshotListener
-                }
-                if (snapshot != null && snapshot.exists()) {
-                    val stops = (snapshot.get("stops") as? List<*>)
-                        ?.mapNotNull { it as? String }?.toSet() ?: emptySet()
-                    val routes = (snapshot.get("routes") as? List<*>)
-                        ?.mapNotNull { it as? String }?.toSet() ?: emptySet()
-                    _favoriteStopIds.value = stops
-                    _favoriteRouteKeys.value = routes
-                }
-            }
     }
 
     fun isStopFavorite(stopId: String): Boolean = _favoriteStopIds.value.contains(stopId)
@@ -88,7 +46,7 @@ class FavoritesRepository(private val authRepository: AuthRepository) {
         val current = _favoriteStopIds.value.toMutableSet()
         if (current.contains(stopId)) current.remove(stopId) else current.add(stopId)
         _favoriteStopIds.value = current
-        saveToFirestore()
+        saveToDataStore()
     }
 
     fun toggleFavoriteRoute(stopId: String, routeShortName: String) {
@@ -96,17 +54,16 @@ class FavoritesRepository(private val authRepository: AuthRepository) {
         val current = _favoriteRouteKeys.value.toMutableSet()
         if (current.contains(key)) current.remove(key) else current.add(key)
         _favoriteRouteKeys.value = current
-        saveToFirestore()
+        saveToDataStore()
     }
 
-    private fun saveToFirestore() {
-        val uid = auth.currentUser?.uid ?: return
-        val data = mapOf(
-            "stops" to _favoriteStopIds.value.toList(),
-            "routes" to _favoriteRouteKeys.value.toList()
-        )
-        db.collection("users").document(uid).collection("favorites").document("data")
-            .set(data, SetOptions.merge())
+    private fun saveToDataStore() {
+        CoroutineScope(Dispatchers.IO).launch {
+            context.favoritesDataStore.edit { prefs ->
+                prefs[STOPS_KEY] = _favoriteStopIds.value
+                prefs[ROUTES_KEY] = _favoriteRouteKeys.value
+            }
+        }
     }
 
     private fun routeKey(stopId: String, routeShortName: String) = "$stopId::$routeShortName"
