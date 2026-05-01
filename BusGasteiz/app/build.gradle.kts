@@ -18,8 +18,8 @@ android {
     defaultConfig {
         applicationId = "com.jaureguialzo.busgasteiz"
 
-        versionName = "1.0.3"
-        versionCode = 4
+        versionName = "1.0.4"
+        versionCode = 5
 
         minSdk = 26
         targetSdk = 36
