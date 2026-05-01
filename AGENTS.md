@@ -161,7 +161,7 @@ Idénticas a la app iOS:
 | `StopTimeEntry`   | Horario individual (tripId, stopSequence, arrivalSecs)              |
 | `GtfsData`        | Contenedor: stops, trips, routes, stopArrivals, activeDates         |
 | `TripDelayInfo`   | Retraso RT: generalDelay, stopDelays[stopId], vehicleLabel          |
-| `ServiceAlert`    | Alerta de servicio: headerText, descriptionText                     |
+| `ServiceAlert`    | Alerta de servicio: headerText, descriptionText, cause (Int), effect (Int) + causeText/effectText |
 | `ServiceAlerts`   | Contenedor: stopAlerts[stopId], routeAlerts[routeId]                |
 | `UpcomingArrival` | Resultado de consulta: horario programado + predicho + retraso + hasAlert |
 | `RouteTag`        | Línea resumida para listas: shortName, color, hasAlert              |
@@ -172,7 +172,45 @@ Idénticas a la app iOS:
 
 ---
 
-## Motor de consulta (`GtfsParser.kt`)
+## Alertas de servicio (GTFS-RT)
+
+### Estructura del feed de alertas de Tuvisa
+
+El feed `gtfsrt_tuvisa_alerts.pb` usa la especificación GTFS-RT estándar pero con una disposición de campos que **difiere de los parsers basados en el proto de la versión 1**. Los números de campo reales son:
+
+| Campo proto          | Nº campo | Wire type | Contenido                                    |
+|----------------------|----------|-----------|----------------------------------------------|
+| `active_period`      | 1        | LEN       | `TimeRange` (campos 1=start, 2=end, Unix epoch) |
+| `informed_entity`    | 5        | LEN       | `EntitySelector` (campo 4=route_id, campo 3=route_type, campo 7=stop_id) |
+| `cause`              | 6        | varint    | Enum GTFS-RT cause (0=desconocido, 5=DEMONSTRATION, 10=CONSTRUCTION…) |
+| `effect`             | 7        | varint    | Enum GTFS-RT effect (1=NO_SERVICE, 4=DETOUR, 6=MODIFIED_SERVICE…) |
+| `url`                | 8        | LEN       | `TranslatedString`                           |
+| `header_text`        | 10       | LEN       | `TranslatedString`                           |
+| `description_text`   | 11       | LEN       | `TranslatedString`                           |
+
+> ⚠️ Los campos 6 y 7 son **varints** (enums), no strings LEN. Si se leen como LEN se corrompe el cursor del `ProtoReader` y se descarta silenciosamente toda la entidad. Verificar siempre el wire type antes de leer como varint.
+
+### Ámbito de las alertas
+
+- **Alertas de manifestación**: se publican como alertas de **parada** (`informed_entity.stop_id`). Una sola entidad lista individualmente todos los stop_ids afectados. **No se publican a nivel de ruta**.
+- **Alertas de obras/modificación**: se publican como alertas de **ruta** (`informed_entity.route_id`), con un `description_text` diferente al `header_text`.
+
+### Textos en las alertas de manifestación
+
+Para alertas de manifestación, `header_text == description_text` en todos los idiomas — el feed no incluye texto descriptivo adicional. La descripción visible al usuario se genera a partir del enum `effect` mediante `ServiceAlert.effectText`, que devuelve frases descriptivas completas localizadas con los recursos de strings de Android.
+
+### Localización de textos de causa/efecto
+
+Los textos generados desde los enums `cause` y `effect` (propiedades `causeText`/`effectText` de `ServiceAlert`) se obtienen mediante `context.getString(R.string....)` o equivalente. Deben tener traducción en `values-es/strings.xml` y `values-eu/strings.xml`. **No confundirlos con los textos del feed**: los del feed ya llegan traducidos en los campos `header_text`/`description_text` del protobuf — `bestTranslation` selecciona el idioma correcto al parsear.
+
+### Visualización (`AlertRow`)
+
+- Si `description_text ≠ header_text` → se muestra el `description_text` del feed (ya en el idioma del dispositivo).
+- Si `description_text == header_text` (p.ej. manifestaciones) → se muestra `effectText` generado desde el enum.
+
+---
+
+
 
 | Función                            | Descripción                                                                            |
 |------------------------------------|----------------------------------------------------------------------------------------|
@@ -180,7 +218,7 @@ Idénticas a la app iOS:
 | `loadEuskoTranGtfs(folder)`        | Carga y filtra GTFS Euskotren al tranvía de Vitoria-Gasteiz                            |
 | `loadActiveDatesFromCalendar()`    | Expande `calendar.txt` a fechas individuales + aplica excepciones                      |
 | `loadTripDelays(data)`             | Decodifica feed GTFS-RT protobuf → `Map<String, TripDelayInfo>`                        |
-| `loadAlerts(data)`                 | Decodifica feed GTFS-RT Alerts → `ServiceAlerts`                                       |
+| `loadAlerts(data)`                 | Decodifica feed GTFS-RT Alerts → `ServiceAlerts` (stopAlerts + routeAlerts + cause/effect) |
 | `routesForStop(stopId, gtfsData, alerts)` | Calcula `List<RouteTag>` para una parada, marcando líneas con alerta           |
 | `computeStopsWithUpcomingArrivals` | Calcula `Set<String>` de stop_id con llegadas en los próximos 60 min                   |
 | `computeNearbyStops`               | Paradas en radio Haversine, ordenadas por distancia                                    |
@@ -354,6 +392,7 @@ Acceder desde Compose a través de `AppSettings.searchRadiusFlow.collectAsState(
 - Todos los strings visibles al usuario deben estar en `strings.xml`.
 - Los nombres de paradas tienen versión en euskera (`nameEu`) y castellano (`nameEs`) según
   `translations.txt` de Tuvisa. `StopInfo.localizedName` los selecciona automáticamente.
+- Los textos de causa/efecto de alertas GTFS-RT (`causeText`/`effectText`) se generan desde enums y deben tener traducción en `values-es/strings.xml` y `values-eu/strings.xml`. Los textos de `header_text`/`description_text` del feed **no** necesitan entrada en strings.xml: ya llegan traducidos del servidor.
 
 ---
 
