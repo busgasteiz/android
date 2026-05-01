@@ -101,12 +101,22 @@ fun RouteArrivalsScreen(
     }
 
     val routeAlerts = run {
-        val gtfs = dataRepository.gtfsData.value ?: return@run emptyList()
-        val route = gtfs.routes.values.firstOrNull { it.shortName == routeShortName }
-            ?: gtfs.routes.values.firstOrNull {
-                it.shortName == routeShortName.takeWhile { c -> c.isDigit() }
-            }
-        route?.let { dataRepository.serviceAlerts.value.routeAlerts[it.id] } ?: emptyList()
+        val sa = dataRepository.serviceAlerts.value
+        val seen = mutableSetOf<String>()
+        val combined = mutableListOf<com.jaureguialzo.busgasteiz.data.ServiceAlert>()
+        fun add(alert: com.jaureguialzo.busgasteiz.data.ServiceAlert) {
+            if (seen.add(alert.headerText + "\u0000" + alert.descriptionText)) combined.add(alert)
+        }
+        val gtfs = dataRepository.gtfsData.value
+        if (gtfs != null) {
+            val route = gtfs.routes.values.firstOrNull { it.shortName == routeShortName }
+                ?: gtfs.routes.values.firstOrNull {
+                    it.shortName == routeShortName.takeWhile { c -> c.isDigit() }
+                }
+            route?.let { sa.routeAlerts[it.id] }?.forEach(::add)
+        }
+        sa.stopAlerts[stop.id]?.forEach(::add)
+        combined
     }
 
     val barColor = parseHexColor(routeColor)

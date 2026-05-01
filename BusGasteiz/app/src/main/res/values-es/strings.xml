@@ -66,4 +66,13 @@
     <!-- Mensajes de toast de localización -->
     <string name="location_unavailable_toast">Localización no disponible. Usando el centro de Vitoria-Gasteiz.</string>
     <string name="outside_area_toast">Estás fuera del área de Vitoria-Gasteiz. Usando el centro de la ciudad.</string>
+    <!-- Causa/efecto de alertas -->
+    <string name="alert_effect_no_service">El autobús no presta servicio.</string>
+    <string name="alert_effect_reduced_service">El servicio de autobús está reducido.</string>
+    <string name="alert_effect_significant_delays">El autobús circula con retrasos significativos.</string>
+    <string name="alert_effect_detour">El autobús ha sido desviado de su ruta original.</string>
+    <string name="alert_effect_additional_service">Se ha añadido servicio adicional de autobús.</string>
+    <string name="alert_effect_modified_service">El servicio de autobús ha sido modificado.</string>
+    <string name="alert_effect_stop_moved">La parada ha sido trasladada.</string>
+    <string name="alert_effect_accessibility_issue">El acceso al autobús puede estar limitado.</string>
 </resources>

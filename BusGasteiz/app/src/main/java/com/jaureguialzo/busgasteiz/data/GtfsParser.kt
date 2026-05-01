@@ -472,13 +472,15 @@ private fun parseAlertEntity(data: ByteArray, alerts: ServiceAlerts) {
     val routeIds = mutableListOf<String>()
     var headerParts = listOf<Pair<String, String>>()
     var descParts = listOf<Pair<String, String>>()
+    var cause = 0
+    var effect = 0
 
     val ar = ProtoReader(alertData)
     while (ar.hasMore) {
         val (field, wire) = ar.readTag() ?: break
         when (field) {
             1 -> ar.readLengthDelimited()  // active_period, ignorar
-            2 -> {  // informed_entity (EntitySelector)
+            5 -> {  // informed_entity (EntitySelector) — campo 5, no 2
                 ar.readLengthDelimited()?.let { d ->
                     val es = ProtoReader(d)
                     while (es.hasMore) {
@@ -495,8 +497,16 @@ private fun parseAlertEntity(data: ByteArray, alerts: ServiceAlerts) {
                     }
                 }
             }
-            6 -> ar.readLengthDelimited()?.let { headerParts = parseTranslatedString(it) }
-            7 -> ar.readLengthDelimited()?.let { descParts = parseTranslatedString(it) }
+            6 -> {  // cause — varint, no LEN
+                if (wire == 0) ar.readVarint()?.let { cause = it.toInt() }
+                else ar.skipField(wire)
+            }
+            7 -> {  // effect — varint, no LEN
+                if (wire == 0) ar.readVarint()?.let { effect = it.toInt() }
+                else ar.skipField(wire)
+            }
+            10 -> ar.readLengthDelimited()?.let { headerParts = parseTranslatedString(it) }
+            11 -> ar.readLengthDelimited()?.let { descParts = parseTranslatedString(it) }
             else -> ar.skipField(wire)
         }
     }
@@ -505,7 +515,7 @@ private fun parseAlertEntity(data: ByteArray, alerts: ServiceAlerts) {
     val desc = bestTranslation(descParts)
     if (header.isEmpty() && desc.isEmpty()) return
 
-    val alert = ServiceAlert(headerText = header, descriptionText = desc)
+    val alert = ServiceAlert(headerText = header, descriptionText = desc, cause = cause, effect = effect)
     for (sid in stopIds) {
         alerts.stopAlerts.getOrPut(sid) { mutableListOf() }.add(alert)
         alerts.stopIds.add(sid)
@@ -612,13 +622,14 @@ fun routesForStop(stopId: String, gtfsData: GtfsData, alerts: ServiceAlerts = Se
     val entries = gtfsData.stopArrivals[stopId] ?: return emptyList()
     val seen = mutableSetOf<String>()
     val tags = mutableListOf<RouteTag>()
+    val stopHasAlert = alerts.stopIds.contains(stopId)
     for (entry in entries) {
         val trip = gtfsData.trips[entry.tripId] ?: continue
         val route = gtfsData.routes[trip.routeId] ?: continue
         val suffix = variantSuffix(trip.routeId, trip.headsign)
         val displayName = route.shortName + (suffix ?: "")
         if (!seen.add(displayName)) continue
-        val hasAlert = alerts.routeIds.contains(trip.routeId)
+        val hasAlert = alerts.routeIds.contains(trip.routeId) || stopHasAlert
         tags.add(RouteTag(shortName = displayName, color = route.color, hasAlert = hasAlert))
     }
     tags.sortWith(Comparator { a, b ->

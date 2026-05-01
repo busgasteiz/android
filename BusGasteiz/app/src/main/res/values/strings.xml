@@ -66,4 +66,13 @@
     <!-- Location toast messages -->
     <string name="location_unavailable_toast">Location unavailable. Using Vitoria-Gasteiz city center.</string>
     <string name="outside_area_toast">Outside Vitoria-Gasteiz area. Using city center.</string>
+    <!-- Alert cause/effect -->
+    <string name="alert_effect_no_service">The bus is not in service.</string>
+    <string name="alert_effect_reduced_service">Bus service is reduced.</string>
+    <string name="alert_effect_significant_delays">The bus is running with significant delays.</string>
+    <string name="alert_effect_detour">The bus has been diverted from its original route.</string>
+    <string name="alert_effect_additional_service">Additional bus service has been added.</string>
+    <string name="alert_effect_modified_service">Bus service has been modified.</string>
+    <string name="alert_effect_stop_moved">The stop has been relocated.</string>
+    <string name="alert_effect_accessibility_issue">Access to the bus may be limited.</string>
 </resources>

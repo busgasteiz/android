@@ -66,4 +66,13 @@
     <!-- Kokapenaren toast mezuak -->
     <string name="location_unavailable_toast">Kokapena ez dago eskuragarri. Vitoria-Gasteizko erdgunea erabiltzen da.</string>
     <string name="outside_area_toast">Vitoria-Gasteizko eremutik kanpo zaude. Hiriguneko erdgunea erabiltzen da.</string>
+    <!-- Alerten kausa/efektua -->
+    <string name="alert_effect_no_service">Autobusak ez du zerbitzurik ematen.</string>
+    <string name="alert_effect_reduced_service">Autobus-zerbitzua murriztuta dago.</string>
+    <string name="alert_effect_significant_delays">Autobusa atzerapen handiekin dabil.</string>
+    <string name="alert_effect_detour">Autobusa bere jatorrizko ibilbidetik desbideratu da.</string>
+    <string name="alert_effect_additional_service">Autobus-zerbitzu gehigarria gehitu da.</string>
+    <string name="alert_effect_modified_service">Autobus-zerbitzua aldatu da.</string>
+    <string name="alert_effect_stop_moved">Geltokia lekuz aldatu da.</string>
+    <string name="alert_effect_accessibility_issue">Autobusera sartzea mugatuta egon daiteke.</string>
 </resources>

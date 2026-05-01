@@ -85,7 +85,9 @@ class TripDelayInfo {
 data class ServiceAlert(
     val id: String = UUID.randomUUID().toString(),
     val headerText: String,
-    val descriptionText: String
+    val descriptionText: String,
+    val cause: Int = 0,
+    val effect: Int = 0
 )
 
 class ServiceAlerts {

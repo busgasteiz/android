@@ -105,7 +105,23 @@ fun StopDetailContent(
         }
     }
 
-    val stopAlerts = dataRepository.serviceAlerts.value.stopAlerts[stop.id] ?: emptyList()
+    val stopAlerts = run {
+        val sa = dataRepository.serviceAlerts.value
+        val seen = mutableSetOf<String>()
+        val combined = mutableListOf<com.jaureguialzo.busgasteiz.data.ServiceAlert>()
+        fun add(alert: com.jaureguialzo.busgasteiz.data.ServiceAlert) {
+            if (seen.add(alert.headerText + "\u0000" + alert.descriptionText)) combined.add(alert)
+        }
+        sa.stopAlerts[stop.id]?.forEach(::add)
+        val gtfs = dataRepository.gtfsData.value
+        if (gtfs != null) {
+            gtfs.routes.values
+                .filter { route -> gtfs.trips.values.any { it.routeId == route.id && (gtfs.stopArrivals[stop.id]?.any { e -> e.tripId == it.id } == true) } }
+                .flatMap { sa.routeAlerts[it.id] ?: emptyList() }
+                .forEach(::add)
+        }
+        combined
+    }
 
     LazyColumn(modifier = modifier.fillMaxWidth()) {
         // Header con nombre, distancia y botón favorito (solo en bottom sheet)
