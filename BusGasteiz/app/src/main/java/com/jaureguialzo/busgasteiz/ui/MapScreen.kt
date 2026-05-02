@@ -59,6 +59,7 @@ import com.jaureguialzo.busgasteiz.settings.AppSettings
 import com.jaureguialzo.busgasteiz.ui.components.StopIcon
 import kotlin.math.cos
 import kotlin.math.log2
+import kotlin.math.pow
 import kotlin.math.PI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -71,6 +72,18 @@ import kotlinx.coroutines.withContext
 private fun radiusToZoom(radius: Float, lat: Double): Float {
     val cosLat = cos(lat * PI / 180.0)
     return log2(156543.03392 * cosLat * 360.0 / (radius * 1.5)).toFloat()
+}
+
+// Inversa de radiusToZoom: convierte un nivel de zoom al radio equivalente en metros
+private fun zoomToRadius(zoom: Float, lat: Double): Float {
+    val cosLat = cos(lat * PI / 180.0)
+    return (156543.03392 * cosLat * 360.0 / (1.5 * 2.0.pow(zoom.toDouble()))).toFloat()
+}
+
+// Redondea un radio continuo al valor predefinido más cercano
+private fun snapRadiusToPreset(radius: Float): Float {
+    val presets = listOf(100f, 200f, 300f, 500f, 1000f)
+    return presets.minByOrNull { kotlin.math.abs(it - radius) } ?: 200f
 }
 
 // MARK: - Mapa de paradas
@@ -101,6 +114,9 @@ fun MapScreen(
     var selectedStop by remember { mutableStateOf<NearbyStop?>(null) }
     var showStopSheet by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    // Evita que una actualización del radio iniciada desde el zoom del mapa dispare
+    // la animación de cámara en LaunchedEffect(searchRadius).
+    var syncingRadiusFromCamera by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
         val initialPos = locationRepository.activePosition.value
@@ -143,12 +159,20 @@ fun MapScreen(
     // Recompute cuando cambien los datos
     LaunchedEffect(version) { recompute() }
 
-    // Actualiza la posición activa cuando el usuario desplaza el mapa manualmente
+    // Actualiza la posición activa cuando el usuario desplaza el mapa manualmente.
+    // Si el zoom cambió, actualiza también el selector de radio.
     LaunchedEffect(cameraPositionState.isMoving) {
         if (!cameraPositionState.isMoving) {
             val target = cameraPositionState.position.target
             locationRepository.setActivePositionToMapCenter(target.latitude, target.longitude)
             recompute()
+            val inferredRadius = snapRadiusToPreset(
+                zoomToRadius(cameraPositionState.position.zoom, target.latitude)
+            )
+            if (inferredRadius != searchRadius) {
+                syncingRadiusFromCamera = true
+                appSettings.setSearchRadius(inferredRadius)
+            }
         }
     }
 
@@ -166,11 +190,16 @@ fun MapScreen(
         recompute()
     }
 
-    // Ajusta el zoom del mapa cuando cambia el radio de búsqueda
+    // Ajusta el zoom del mapa cuando cambia el radio de búsqueda desde el selector.
+    // Si el cambio viene del propio zoom (syncingRadiusFromCamera), no anima la cámara.
     var isFirstSearchRadius by remember { mutableStateOf(true) }
     LaunchedEffect(searchRadius) {
         if (isFirstSearchRadius) {
             isFirstSearchRadius = false
+            return@LaunchedEffect
+        }
+        if (syncingRadiusFromCamera) {
+            syncingRadiusFromCamera = false
             return@LaunchedEffect
         }
         val center = cameraPositionState.position.target
